@@ -213,6 +213,55 @@ async function loadText(rel){
   ok('导航顺序与数据三站一致', navHrefs.slice(0,3).join() ===
      ['https://lib.midicn.com/','https://mid.midicn.com/','https://zip.midicn.com/'].join());
 
+  /* ⑦ S4 专区页（**服务端渲染**，只查内容，不需要 jsdom 交互）
+     ─────────────────────────────────────────────────────────────────
+     这两页是「内容的呈现」，所以断言以内容为准：条数要和台账对得上、
+     署名实据（上游许可原文）要在、不该出现的（F4 / 站内直下）不能出现。 */
+  console.log('\n【S4】专区页（F2 / 民族）');
+  {
+    const doc = JSON.parse(data);
+    const nF2 = doc.entries.filter(e => e.t === 'F2').length;
+    const nEth = doc.entries.filter(e => e.k === 'ethnic').length;
+
+    const f2 = await loadText('f2/index.html');
+    ok('F2 专区可取到', f2.length > 10000, (f2.length / 1024).toFixed(0) + ' KB');
+    ok('F2 条数与台账一致', (f2.match(/class="srow"/g) || []).length === nF2,
+       (f2.match(/class="srow"/g) || []).length + ' / ' + nF2);
+    ok('F2 页给出署名实据（上游许可原文）',
+       (f2.match(/class="sr-lic"/g) || []).length > nF2 * 0.5);
+    ok('F2 页说明了为什么基本不托管', /为什么 F2 基本不托管/.test(f2));
+    ok('F2 页 canonical 指向 /f2/', /rel="canonical" href="https:\/\/sf\.midicn\.com\/f2\/"/.test(f2));
+    ok('F2 页资源前缀正确（子目录 ../）', /src="\.\.\/assets\/shell\.js"/.test(f2));
+    ok('F2 页不出现 F4 徽标', !/tierbadge c4/.test(f2));
+    ok('F2 页不含站内直下（F2 基本不托管）', !/class="act dl"/.test(f2));
+
+    const eth = await loadText('ethnic/index.html');
+    ok('民族专项可取到', eth.length > 5000, (eth.length / 1024).toFixed(0) + ' KB');
+    ok('民族条数与台账一致', (eth.match(/class="srow"/g) || []).length === nEth,
+       (eth.match(/class="srow"/g) || []).length + ' / ' + nEth);
+    ok('民族页给出「库内对应曲目」提示', (eth.match(/class="sr-hit"/g) || []).length === nEth);
+    ok('民族页诚实说明缺口', /最大的缺口/.test(eth));
+    ok('民族页 canonical 指向 /ethnic/',
+       /rel="canonical" href="https:\/\/sf\.midicn\.com\/ethnic\/"/.test(eth));
+    ok('民族页资源前缀正确', /src="\.\.\/assets\/shell\.js"/.test(eth));
+    /* ⚠️ 防「双语属性漏进内容」：属性只能出现在标签内（`<a data-zh="…">`），
+       一旦出现在 `>` 之后就会被浏览器当**可见文本**显示出来（真实踩到过：
+       页面上直接印着 data-zh="站内直下 ↓"）。这条断言专门守它。 */
+    for (const [name, text] of [['F2 专区', f2], ['民族专项', eth]]) {
+      const leaked = (text.match(/>[^<]*\sdata-(zh|en|ph-zh|ph-en)="/g) || []).slice(0, 2);
+      ok(`${name}：双语属性没有漏进可见文本`, leaked.length === 0,
+         leaked.map(s => s.trim().slice(0, 40)).join(' | ') || '干净');
+    }
+    ok('首页有专区入口且条数与数据一致', (() => {
+      const z = $('#zones');
+      if (!z) return false;
+      const a = Array.from(z.querySelectorAll('a')).map(x => x.getAttribute('href'));
+      return a.join() === 'f2/,ethnic/'
+        && new RegExp(String(nF2)).test(z.textContent)
+        && new RegExp(String(nEth)).test(z.textContent);
+    })(), $('#zones') ? $('#zones').textContent.slice(0, 60) : '无');
+  }
+
   console.log('\n===== 结果 (' + (pass + fail) + ' 项): ' + pass + '/' + (pass + fail) + ' 通过 =====');
   if (fails.length) console.log('失败项:\n  - ' + fails.join('\n  - '));
   process.exit(fail ? 1 : 0);

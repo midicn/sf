@@ -63,6 +63,26 @@
 .libhint a{color:var(--paper-2);border-bottom:1px solid var(--rule-2)}
 .libhint a:hover{color:var(--gold)}
 
+/* ── 专区页（f2 / ethnic）────────────────────────────────────────────
+   服务端渲染，复用首页那套 .slist/.srow；这里只补两处专区特有的东西：
+   `.sr-lic` 上游许可原文（署名实据）· `.sr-hit` 库内对应曲目提示 */
+.sr-lic{flex-basis:100%;font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);
+  opacity:.85;line-height:1.6;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sr-hit{flex-basis:100%;font-size:var(--fs-11);color:var(--gold);opacity:.85}
+.slist.ethnic .sr-main{flex-wrap:wrap}
+.steps li{margin:0 0 var(--s2)}
+
+/* 首页的专区入口 */
+.zones{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin:var(--s3) 0 var(--s2);
+  font-size:var(--fs-13);color:var(--paper-3)}
+.zones a{color:var(--gold);border-bottom:1px solid var(--rule-2);padding-bottom:1px}
+.zones a:hover{color:var(--paper);border-bottom-color:var(--vermilion)}
+.zones .zsep{color:var(--rule-2)}
+@media (max-width:640px){
+  .sr-lic{-webkit-line-clamp:3}
+}
+
 /* 档位徽标 */
 .tierbadge{font-family:var(--mono);font-size:var(--fs-10);letter-spacing:.05em;
   border:1px solid var(--rule-2);border-radius:3px;padding:1px 5px;flex:none}

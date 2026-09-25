@@ -207,23 +207,30 @@ def main(argv) -> int:
     ap.add_argument("--verify-online", action="store_true",
                     help="核对线上直链可用且字节数一致（走 Range 探测，省流量）")
     ap.add_argument("--uid", default="", help="逗号分隔的条目 id（默认用精选方案）")
+    ap.add_argument("--all", action="store_true",
+                    help="取**全部**可托管集合（F1+sf2+≤50MB），忽略精选配额")
     ap.add_argument("--upload-hint", action="store_true")
     a = ap.parse_args(argv[1:])
 
     led = load_ledger()
     cands = eligible(led)
-    picked = ([c for c in cands if c["id"] in set(a.uid.split(","))] if a.uid
-              else curated(cands))
+    picked = (cands if a.all else
+              ([c for c in cands if c["id"] in set(a.uid.split(","))] if a.uid
+               else curated(cands)))
+    todo = [c for c in picked
+            if c["id"] not in (json.loads(HOSTED.read_text(encoding="utf-8"))["files"]
+                               if HOSTED.exists() else {})]
 
     if a.list or not (a.apply or a.verify or a.verify_online or a.upload_hint):
-        print("台账 %s 条 · 可分发 %d · F1+sf2+≤50MB **可托管 %d** 条" % (
-            led["total"], led["redistributable"], len(cands)))
-        print("\n精选方案 %d 条 · 合计 %.1f MB：" % (
-            len(picked), sum(c["size_mb"] for c in picked)))
-        for c in sorted(picked, key=lambda c: c["cat"]):
+        print("台账 %s 条 · 可分发 %d · F1+sf2+≤50MB **可托管 %d** 条 · 已托管 %d 条" % (
+            led["total"], led["redistributable"], len(cands),
+            len(json.loads(HOSTED.read_text(encoding="utf-8"))["files"]) if HOSTED.exists() else 0))
+        print("\n本次方案 %d 条（已托管 %d 条已跳过）· 本次新增合计 %.1f MB：" % (
+            len(picked), len(picked) - len(todo), sum(c["size_mb"] for c in todo)))
+        for c in sorted(todo, key=lambda c: c["cat"]):
             print("  %-9s %-40s %6.1f MB  %s" % (c["cat"], c["name"][:40], c["size_mb"], c["id"]))
         rest = [c for c in cands if c["id"] not in {x["id"] for x in picked}]
-        print("\n未入选（仍可托管，第二批再取）%d 条 · 合计 %.1f MB" % (
+        print("\n未入选（仍可托管，下一批再取）%d 条 · 合计 %.1f MB" % (
             len(rest), sum(c["size_mb"] for c in rest)))
         return 0
 
@@ -300,9 +307,9 @@ def main(argv) -> int:
         v.setdefault("path", SITE_FILES + "/" + v["file"])
         v.setdefault("release", RELEASE_BASE + v["file"])
     print("取回 %d 个 F1 音色（合计 %.1f MB）…\n" % (
-        len(picked), sum(c["size_mb"] for c in picked)))
-    for i, c in enumerate(picked, 1):
-        print("[%2d/%2d] %s" % (i, len(picked), c["name"][:56]))
+        len(todo), sum(c["size_mb"] for c in todo)))
+    for i, c in enumerate(todo, 1):
+        print("[%2d/%2d] %s" % (i, len(todo), c["name"][:56]))
         # 归档名**保留完整后缀链**（.tar.xz / .tar.bz2），否则 7-Zip 认不出两级压缩
         base = c["dl_url"].split("?")[0].rsplit("/", 1)[-1]
         sfx = "".join(Path(base).suffixes).lower()

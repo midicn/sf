@@ -86,6 +86,13 @@ def gate1(rep: Rep):
                 % (r.stdout.strip().splitlines()[-1:] or [''])[0])
     else:
         rep.ok(1, 'data/soundfonts.json 与台账同源可复现')
+    r2 = subprocess.run([PY, str(HERE / 'gen_pages.py'), '--check'],
+                        capture_output=True, text=True, cwd=str(SITE))
+    if r2.returncode != 0:
+        rep.add(1, '专区页与台账不同步 —— 重跑 tools/gen_pages.py（%s）'
+                % (r2.stdout.strip().splitlines()[-1:] or [''])[0])
+    else:
+        rep.ok(1, '专区页（f2 / ethnic）与台账同源可复现')
     doc = json.loads(out.read_text(encoding='utf-8'))
     if doc['totals']['redist'] != led['redistributable']:
         rep.add(1, '可分发条数不一致：站点 %s vs 台账 %s'
@@ -143,15 +150,18 @@ def gate2(rep: Rep, doc: dict):
 
 # ── 关 3 · 外壳一致性 ──────────────────────────────────────────────────
 def gate3(rep: Rep):
-    pages = sorted(p for p in SITE.glob('*.html'))
+    pages = sorted(p for p in SITE.rglob('*.html'))
     if not pages:
         rep.add(3, '没有页面')
         return
     hs, fs_, nv = {}, {}, {}
 
     def _norm(block: str) -> str:
-        """去掉高亮态与空白差异后比对（页头/页脚应对各页逐字一致）。"""
-        return re.sub(r'\s+', ' ', re.sub(r'\s*class="on"', '', block)).strip()
+        """去掉高亮态、品牌链接的目录前缀、空白差异后比对（页头/页脚应对各页逐字一致）。"""
+        b = re.sub(r'\s*class="on"', '', block)
+        # 品牌链接子目录页是 ../、根页是 ./ —— 归一成同一个占位，只关心「其余逐字相同」
+        b = re.sub(r'(class="brand" href=")[^"]*"', r'\1HOME"', b)
+        return re.sub(r'\s+', ' ', b).strip()
 
     for p in pages:
         s = p.read_text(encoding='utf-8')
@@ -215,7 +225,7 @@ RE_SCRIPT = re.compile(r'<script\b.*?</script>', re.S)
 def gate4(rep: Rep):
     for must in ('index.html', '404.html', 'robots.txt', 'sitemap.xml', 'manifest.json',
                  'assets/style.css', 'assets/site.css', 'assets/shell.js', 'assets/og.png',
-                 'data/soundfonts.json'):
+                 'data/soundfonts.json', 'f2/index.html', 'ethnic/index.html'):
         if not (SITE / must).exists():
             rep.add(4, '缺产物 %s' % must)
     if not (SITE / 'core.lock.json').exists():
@@ -224,7 +234,7 @@ def gate4(rep: Rep):
         rep.add(4, '无 core.lock.json —— 数据侧站的正常状态（外壳走 lib 复制件，见关 3）',
                 severe=False)
     n = 0
-    for p in sorted(SITE.glob('*.html')):
+    for p in sorted(SITE.rglob('*.html')):
         # ⚠️ 必须剔除内联脚本再扫 —— 脚本模板里的 href="' + esc(x) + '" 不是真链接
         s = RE_SCRIPT.sub('', p.read_text(encoding='utf-8'))
         for href in RE_LOCAL.findall(s):
@@ -232,8 +242,11 @@ def gate4(rep: Rep):
             if not t or t.endswith('.md'):
                 continue
             n += 1
-            if not (SITE / t).exists():
-                rep.add(4, '%s → 站内引用 404：%s' % (p.name, t))
+            # ⚠️ 子目录页（f2/…）里 `assets/x` 会算成 `f2/assets/x`；
+            #    以 `/` 开头的绝对引用要按**站点根**解析。两种都得认。
+            tgt = (SITE / t.lstrip('/')) if t.startswith('/') else (p.parent / t)
+            if not tgt.exists():
+                rep.add(4, '%s → 站内引用 404：%s' % (p.relative_to(SITE).as_posix(), t))
     if all(g != 4 for g, _s, _m in rep.errors):
         rep.ok(4, '站内引用全部可达（%d 处）' % n)
     # 数据里的来源地址必须是 http(s)
@@ -249,7 +262,7 @@ def gate4(rep: Rep):
 
 # ── 关 5 · 元数据 ──────────────────────────────────────────────────────
 def gate5(rep: Rep):
-    for p in sorted(SITE.glob('*.html')):
+    for p in sorted(SITE.rglob('*.html')):
         s = p.read_text(encoding='utf-8')
         is404 = p.name == '404.html'
         need = ['<title>', 'name="description"', 'rel="canonical"', 'og:title',
@@ -273,24 +286,29 @@ def gate5(rep: Rep):
 
 # ── 关 6 · 双语与表述 ──────────────────────────────────────────────────
 def gate6(rep: Rep):
-    for p in sorted(SITE.glob('*.html')):
+    for p in sorted(SITE.rglob('*.html')):
+        rel = p.relative_to(SITE).as_posix()
         s = p.read_text(encoding='utf-8')
         zh = len(re.findall(r'data-zh="', s))
         en = len(re.findall(r'data-en="', s))
         if zh != en:
-            rep.add(6, '%s：data-zh(%d) ≠ data-en(%d)' % (p.name, zh, en))
+            rep.add(6, '%s：data-zh(%d) ≠ data-en(%d)' % (rel, zh, en))
         ph_zh = len(re.findall(r'data-ph-zh="', s))
         ph_en = len(re.findall(r'data-ph-en="', s))
         if ph_zh != ph_en:
-            rep.add(6, '%s：data-ph-zh ≠ data-ph-en' % p.name)
-        m = WRITING_MARKS.search(s)
+            rep.add(6, '%s：data-ph-zh ≠ data-ph-en' % rel)
+        # ⚠️ 写作标记只查**我们自己写的部分**：条目行 / 许可原文是**上游数据**，
+        #    里面出现 WIP / TODO 之类是上游的措辞，不是我们的未完成标记（踩过：上游音色名带 [WIP]）。
+        own = re.sub(r'<li class="srow".*?</li>', '', s, flags=re.S)
+        own = re.sub(r'<span class="sr-lic".*?</span>', '', own, flags=re.S)
+        m = WRITING_MARKS.search(own)
         if m:
-            rep.add(6, '%s：残留写作标记「%s」' % (p.name, m.group(0)))
+            rep.add(6, '%s：残留写作标记「%s」' % (rel, m.group(0)))
         for pat, hint in GEO.items():
             if re.search(pat, s):
-                rep.add(6, '%s：%s' % (p.name, hint))
-    if not rep.errors or all(g != 6 for g, _s, _m in rep.errors):
-        rep.ok(6, '双语成对 · 无写作标记残留 · 地区表述合规')
+                rep.add(6, '%s：%s' % (rel, hint))
+    if all(g != 6 for g, _s, _m in rep.errors):
+        rep.ok(6, '双语成对 · 无写作标记残留（已排除上游数据）· 地区表述合规')
     # 数据层同样查地区表述
     d = SITE / 'data' / 'soundfonts.json'
     if d.exists():

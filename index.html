@@ -55,6 +55,9 @@
 
   <div class="note" id="tierNote"></div>
 
+  <!-- 专区入口（S4）：两页是服务端渲染的独立页面，这里只做入口 -->
+  <p class="zones" id="zones"></p>
+
   <!-- ── 一 · 可直接下载（F1 · 站内托管优先） ─────────────────────── -->
   <div class="stitle"><h2 data-zh="一 · 可直接下载" data-en="1 · Ready to download">一 · 可直接下载</h2></div>
   <p class="lede" id="f1Lede"></p>
@@ -298,6 +301,16 @@ function render(){
     '<b>F4</b> not listed. Any <code>.sf2</code> you download can be loaded straight into the '+
     '<a href="https://lib.midicn.com/">library</a> player.'
   );
+
+  // ── 专区入口（S4）──
+  const nF2 = d.entries.filter(e=>e.t==='F2').length;
+  const nEth = d.entries.filter(e=>e.k==='ethnic').length;
+  $('zones').innerHTML = t('专区：', 'Zones: ') +
+    '<a href="f2/">'+t('F2 · 署名后可分发（'+fmt(nF2)+' 条，附许可原文）',
+                        'F2 · redistribution with credit ('+fmt(nF2)+', with licence text)')+'</a>' +
+    '<span class="zsep">·</span>' +
+    '<a href="ethnic/">'+t('民族 / 世界音色（'+fmt(nEth)+' 条，附库内对应曲目）',
+                            'Ethnic &amp; world ('+fmt(nEth)+', with matching repertoire)')+'</a>';
 
   // ── 一 · 可直接下载 ──
   const f1 = d.entries.filter(e=>e.t==='F1').sort(sortFn);
