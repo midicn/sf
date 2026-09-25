@@ -100,13 +100,23 @@ def curated(cands: list[dict]) -> list[dict]:
     return out
 
 
+# ⚠️ 受限源兜底：`archive.org` 在本机直连不通、经环境代理 502（见 lib/work/tools/sf_crawl.py
+# 的 FORWARD_* 说明）。这里有需要时也走公共转发，**原样照抄那份白名单，别两边走偏**。
+FORWARD_HOSTS = ("archive.org",)
+
+
 def fetch(url: str, dest: Path, tries: int = 5) -> bool:
     if dest.exists() and dest.stat().st_size > 1024:
         print("      · 已有缓存 %s（%.1f MB）" % (dest.name, dest.stat().st_size / 1048576))
         return True
+    get_url = url
+    if any(h in url for h in FORWARD_HOSTS):
+        import urllib.parse
+        get_url = "https://api.allorigins.win/raw?url=" + urllib.parse.quote(url, safe="")
+        print("      · 走转发取回（该域名直连不通）")
     for i in range(tries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            req = urllib.request.Request(get_url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=300, context=CTX) as r:
                 data = r.read()
             if len(data) < 1024:
