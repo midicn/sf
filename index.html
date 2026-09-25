@@ -312,9 +312,14 @@ function render(){
   );
 
   // ── 专区入口（S4）──
+  const nF1 = d.entries.filter(e=>e.t==='F1').length;
+  const nHosted = d.totals.hosted;
   const nF2 = d.entries.filter(e=>e.t==='F2').length;
   const nEth = d.entries.filter(e=>e.k==='ethnic').length;
   $('zones').innerHTML = t('专区：', 'Zones: ') +
+    '<a href="f1/">'+t('F1 · 自由分发（'+fmt(nF1)+' 条，'+fmt(nHosted)+' 条站内直下）',
+                        'F1 · free to redistribute ('+fmt(nF1)+', '+fmt(nHosted)+' self-hosted)')+'</a>' +
+    '<span class="zsep">·</span>' +
     '<a href="f2/">'+t('F2 · 署名后可分发（'+fmt(nF2)+' 条，附许可原文）',
                         'F2 · redistribution with credit ('+fmt(nF2)+', with licence text)')+'</a>' +
     '<span class="zsep">·</span>' +

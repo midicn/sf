@@ -238,7 +238,7 @@ async function loadText(rel){
      ─────────────────────────────────────────────────────────────────
      这两页是「内容的呈现」，所以断言以内容为准：条数要和台账对得上、
      署名实据（上游许可原文）要在、不该出现的（F4 / 站内直下）不能出现。 */
-  console.log('\n【S4】专区页（F2 / 民族）');
+  console.log('\n【S4】许可专区页（F1 / F2 / 民族）');
   {
     const doc = JSON.parse(data);
     const nF2 = doc.entries.filter(e => e.t === 'F2').length;
@@ -256,6 +256,21 @@ async function loadText(rel){
     ok('F2 页不出现 F4 徽标', !/tierbadge c4/.test(f2));
     ok('F2 页不含站内直下（F2 基本不托管）', !/class="act dl"/.test(f2));
 
+    /* /f1/：本站最重要的一档（零义务 + 站内托管）。首页目录是客户端渲染的，
+       所以这一页是爬虫与慢网用户**唯一**能直接看到 F1 全部条目与下载入口的地方。 */
+    const nF1 = doc.entries.filter(e => e.t === 'F1').length;
+    const f1 = await loadText('f1/index.html');
+    ok('F1 专区可取到', f1.length > 10000, (f1.length / 1024).toFixed(0) + ' KB');
+    ok('F1 条数与台账一致', (f1.match(/class="srow"/g) || []).length === nF1,
+       (f1.match(/class="srow"/g) || []).length + ' / ' + nF1);
+    ok('F1 页把站内托管单独置顶且数量对齐',
+       (f1.match(/class="act dl"/g) || []).length === nHosted,
+       (f1.match(/class="act dl"/g) || []).length + ' / ' + nHosted);
+    ok('F1 页托管行都给「用它试听」深链', (f1.match(/class="act lib play"/g) || []).length === nHosted);
+    ok('F1 页 canonical 指向 /f1/',
+       f1.includes('rel="canonical" href="https://sf.midicn.com/f1/"'));
+    ok('F1 页资源前缀正确', f1.includes('src="../assets/shell.js"'));
+
     const eth = await loadText('ethnic/index.html');
     ok('民族专项可取到', eth.length > 5000, (eth.length / 1024).toFixed(0) + ' KB');
     ok('民族条数与台账一致', (eth.match(/class="srow"/g) || []).length === nEth,
@@ -268,7 +283,7 @@ async function loadText(rel){
     /* ⚠️ 防「双语属性漏进内容」：属性只能出现在标签内（`<a data-zh="…">`），
        一旦出现在 `>` 之后就会被浏览器当**可见文本**显示出来（真实踩到过：
        页面上直接印着 data-zh="站内直下 ↓"）。这条断言专门守它。 */
-    for (const [name, text] of [['F2 专区', f2], ['民族专项', eth]]) {
+    for (const [name, text] of [['F1 专区', f1], ['F2 专区', f2], ['民族专项', eth]]) {
       const leaked = (text.match(/>[^<]*\sdata-(zh|en|ph-zh|ph-en)="/g) || []).slice(0, 2);
       ok(`${name}：双语属性没有漏进可见文本`, leaked.length === 0,
          leaked.map(s => s.trim().slice(0, 40)).join(' | ') || '干净');
@@ -277,10 +292,13 @@ async function loadText(rel){
       const z = $('#zones');
       if (!z) return false;
       const a = Array.from(z.querySelectorAll('a')).map(x => x.getAttribute('href'));
-      return a.join() === 'f2/,ethnic/'
+      // 专区入口 = 三个许可/主题专区页（F1 自由分发 / F2 署名 / 民族），顺序固定
+      return a.join() === 'f1/,f2/,ethnic/'
+        && new RegExp(String(nF1)).test(z.textContent)
+        && new RegExp(String(nHosted)).test(z.textContent)
         && new RegExp(String(nF2)).test(z.textContent)
         && new RegExp(String(nEth)).test(z.textContent);
-    })(), $('#zones') ? $('#zones').textContent.slice(0, 60) : '无');
+    })(), $('#zones') ? $('#zones').textContent.slice(0, 80) : '无');
   }
 
   console.log('\n===== 结果 (' + (pass + fail) + ' 项): ' + pass + '/' + (pass + fail) + ' 通过 =====');

@@ -262,6 +262,96 @@ REPERTOIRE = {
 }
 
 
+def page_f1(led: dict, hosted: dict) -> str:
+    """`/f1/` · 自由分发档（CC0 / PD / WTFPL / Unlicense）——**服务端渲染**。
+
+    为什么必须有这一页：首页的目录是**客户端渲染**的，爬虫看到的是空列表；
+    而 F1 恰恰是本站最有价值的一档（**零义务、可商用、可改作，且站内已托管可一键试听**）。
+    F2 与民族两页已服务端渲染，F1 却一直没有 —— 这是个实打实的覆盖缺口。
+    """
+    ents = [e for e in led["entries"] if e["tier"] == "F1" and e["redistributable"]]
+    ents.sort(key=lambda e: ((e["id"] not in hosted), e["name"].lower()))
+    n_host = sum(1 for e in ents if e["id"] in hosted)
+    by_lic: dict[str, int] = {}
+    for e in ents:
+        by_lic[e["license"]] = by_lic.get(e["license"], 0) + 1
+    lic_rows = "".join(
+        "<tr><td>%s</td><td>%d</td></tr>" % (esc(k), v)
+        for k, v in sorted(by_lic.items(), key=lambda kv: -kv[1]))
+    hrows = "".join(row(e, hosted) for e in ents if e["id"] in hosted)
+    rest = [e for e in ents if e["id"] not in hosted]
+
+    body = f"""
+<main class="doc wide">
+  <p class="meta" {bi("档案 · 许可专区", "ARCHIVE · LICENCE ZONE")}>档案 · 许可专区</p>
+  <h1 {bi("F1 专区 · 自由分发", "F1 zone · free to redistribute")}>F1 专区 · 自由分发</h1>
+  <p class="lede" {bi(
+    "这一档是**义务最少**的一档：CC0 / 公有领域 / WTFPL / Unlicense —— "
+    "**可商用、可改作、按原样再分发都不需要署名**。所以本站把其中体积合适的一批"
+    "**直接托管在这里**：点「站内直下」就拿到，点「用它试听」就直接进音乐库听。",
+    "This tier carries the <b>fewest obligations</b>: CC0 / public domain / WTFPL / Unlicense — "
+    "<b>commercial use, remixing and redistribution all need no credit</b>. So the site "
+    "<b>hosts the suitable ones right here</b>: “Download” grabs the file, “Play with it” "
+    "opens it in the library player.")}></p>
+
+  <div class="stat">
+    <div><b>{len(ents)}</b><span {bi("条 F1 音色", "F1 banks")}>条 F1 音色</span></div>
+    <div><b>{n_host}</b><span {bi("站内已托管", "self-hosted")}>站内已托管</span></div>
+    <div><b>{len(by_lic)}</b><span {bi("种许可", "licences")}>种许可</span></div>
+  </div>
+
+  <div class="stitle"><h2 {bi("一 · 许可分布", "1 · Licences")}>一 · 许可分布</h2></div>
+  <div class="tblwrap"><table><thead><tr>
+    <th {bi("许可", "Licence")}>许可</th><th {bi("条数", "Banks")}>条数</th></tr></thead>
+    <tbody>{lic_rows}</tbody></table></div>
+
+  <div class="stitle"><h2 {bi("二 · 站内已托管（一键试听）",
+                             "2 · Self-hosted (one-click listen)")}>二 · 站内已托管（一键试听）</h2></div>
+  <div class="note" {bi(
+    "这些音色**存放在本站**（境内直连可用，不需要跟第三方握手）：「站内直下」直接下载，"
+    "「用它试听」会把音色带进音乐库播放器 —— **不用先下载、不用手动导入**。"
+    "许可全在零义务那一档，拿走不用署名。",
+    "These banks live <b>on this site</b> (reachable directly): “Download” grabs the file, "
+    "“Play with it” loads it into the library player — <b>no manual download or import</b>. "
+    "All are zero-obligation.")}></div>
+  <ul class="slist hosted">{hrows}</ul>
+
+  <div class="stitle"><h2 {bi("三 · 其余自由音色（按用途）",
+                             "3 · The rest, by use")}>三 · 其余自由音色（按用途）</h2></div>
+  <div class="note" {bi(
+    "同样可以自由使用，但**本站没有复制它们**（或体积超出托管红线）→ 点名称去来源页自取。",
+    "Equally free to use, but <b>not mirrored here</b> (or past the hosting size line) — "
+    "click a name to fetch it from its source page.")}></div>
+  {sections(rest, led["cat_names"], hosted)}
+
+  <div class="stitle"><h2 {bi("四 · 这一档为什么最重要",
+                             "4 · Why this tier matters most")}>四 · 这一档为什么最重要</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "其余三档都有附加条件：<b>F2</b> 要署名、<b>F3</b> 会用传染性许可影响你的作品、"
+      "<b>F4</b> 干脆不允许再分发。只有这一档你可以**什么都不用管**："
+      "拿去商用、改作、再打包分发都行，不必写来源、不必附许可副本。",
+      "The other three tiers all add conditions: <b>F2</b> requires credit, <b>F3</b> is copyleft "
+      "and will affect your work, <b>F4</b> cannot be redistributed at all. Only this tier is "
+      "unconditional — commercial use, remixing and re-bundling, with no credit and no licence copy."
+    )}>其余三档都有附加条件，只有这一档零义务。</p>
+    <p {bi(
+      "所以本站的托管策略是：**只托管这一档**（另加体积红线 ≤ 50 MB、格式必须是浏览器能吃下的 .sf2）。"
+      "这不是技术限制，是许可纪律 —— 托管等于我们替你把文件再分发一次，那就要承担相应的义务。",
+      "Hence the hosting policy: <b>this tier only</b> (plus ≤ 50 MB and browser-playable .sf2). "
+      "That line is licensing discipline, not a technical limit: hosting means redistributing on "
+      "your behalf, and that comes with duties."
+    )}>托管策略只覆盖这一档。</p>
+  </div></div>
+</main>
+"""
+    title = "F1 专区 · 自由分发（%d 条 CC0 / 公有领域音色，其中 %d 条站内直下）" % (len(ents), n_host)
+    desc = ("%d 条零义务 SoundFont（CC0 / 公有领域 / WTFPL）：%d 条站内直接下载并可一键试听，"
+            "其余给出作者、许可与来源。" % (len(ents), n_host))
+    return head(title, desc) + body + FOOT
+
+
+# ══════════════════════════════════════════════════════════════════════
 def page_ethnic(led: dict, hosted: dict) -> str:
     ents = [e for e in led["entries"] if e["cat"] == "ethnic" and e["redistributable"]]
     ents.sort(key=lambda e: (e.get("size_mb") or 9e9, e["name"].lower()))
@@ -358,7 +448,9 @@ def main(argv) -> int:
     led = json.loads(lp.read_text(encoding="utf-8"))
     hosted = json.loads(HOSTED.read_text(encoding="utf-8"))["files"] if HOSTED.exists() else {}
 
-    pages = {"f2/index.html": page_f2(led, hosted), "ethnic/index.html": page_ethnic(led, hosted)}
+    pages = {"f1/index.html": page_f1(led, hosted),
+             "f2/index.html": page_f2(led, hosted),
+             "ethnic/index.html": page_ethnic(led, hosted)}
     rc = 0
     for rel, text in pages.items():
         p = SITE / rel
