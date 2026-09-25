@@ -80,7 +80,15 @@ async function loadText(rel){
     },
   });
   const w = dom.window, d = w.document;
+  /* ⚠️ **必须轮询等渲染就绪**，不能用固定延时：
+     线上模式要走网络拉 300KB 数据，固定 `wait(400)` 在慢网下会「首屏还没渲染就断言」，
+     产生**假回归**（实测踩到过一次：`#catalog` 还是空的，一批交互断言全红）。
+     与 lib 站 e2e 同一做法（那边等瓦片与曲目行就绪）。 */
   await wait(400);
+  for (let i = 0; i < 40; i++){
+    if (d.querySelectorAll('#catalog .srow').length && d.getElementById('stat').children.length) break;
+    await wait(400);
+  }
 
   ok('页面脚本无异常', errs.length === 0, errs.slice(0,2).join(' | '));
   const $ = s => d.querySelector(s);
