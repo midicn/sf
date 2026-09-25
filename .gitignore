@@ -1,0 +1,3 @@
+# sf.midicn.com 站点仓 —— 产物全进仓（页面直接服务）
+# 站内托管的 .sf2 **不在这里**（走 midicn/music-soundfonts 的 Release 资产，见 ../files/）
+_clone/

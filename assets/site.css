@@ -1,0 +1,118 @@
+/* sf.midicn.com · 音色站专属样式
+   ───────────────────────────────────────────────────────────────────
+   叠加在 style.css 之上（style.css 是 lib 站的复制件，**勿改那份**）。
+   与 zip 站同构：同一套数据行样式、同一套筛选框，保证两个数据站像姊妹站。
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ── 总览条（与 zip 站逐字一致）───────────────────────────────────── */
+.stat{display:flex;flex-wrap:wrap;gap:26px;margin:14px 0 26px}
+.stat > div{min-width:104px}
+.stat b{display:block;font-family:var(--mono);font-size:var(--fs-20);color:var(--paper);line-height:1.25}
+.stat span{font-size:var(--fs-12);color:var(--paper-3)}
+
+/* ── 筛选框 ───────────────────────────────────────────────────────── */
+.filterbox{margin:var(--s3) 0 var(--s5)}
+.filterbox input{width:100%;max-width:460px;background:var(--ink-2);border:1px solid var(--rule-2);
+  border-radius:var(--r);color:var(--paper);padding:9px 12px;font-size:var(--fs-14)}
+.filterbox input:focus{outline:none;border-color:var(--vermilion)}
+
+/* 筛选 chip 行 */
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:var(--s3)}
+.chips + .chips{margin-top:6px}
+.chips-l{font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);
+  letter-spacing:.08em;text-transform:uppercase;margin-right:2px;flex:none}
+.chip{font:inherit;font-size:var(--fs-12);cursor:pointer;background:var(--ink-2);
+  border:1px solid var(--rule-2);border-radius:999px;color:var(--paper-2);
+  padding:3px 10px;line-height:1.7;white-space:nowrap}
+.chip:hover{border-color:var(--vermilion);color:var(--paper)}
+.chip.on{background:var(--vermilion-soft);border-color:var(--vermilion-line);color:var(--paper)}
+.chip i{font-style:normal;font-family:var(--mono);font-size:var(--fs-10);color:var(--paper-3);margin-left:5px}
+.chip.tierchip.c1.on{background:var(--jade-soft);border-color:rgba(94,158,126,.5)}
+.chip.tierchip.c2.on{background:var(--gold-soft);border-color:rgba(201,162,39,.5)}
+.chip.tierchip.c3.on{background:rgba(122,138,163,.16);border-color:rgba(122,138,163,.5)}
+
+/* ── 音色条目（每音色一行；结构与 zip 站的 .prow 同构）────────────── */
+.slist{margin:0;padding:0;list-style:none}
+.srow{display:flex;gap:12px;align-items:baseline;justify-content:space-between;
+  padding:8px 2px;border-bottom:1px solid var(--rule)}
+.srow:hover{background:var(--ink-2)}
+.sr-main{min-width:0;display:flex;gap:10px;align-items:baseline;flex:1;flex-wrap:wrap}
+.sr-k{color:var(--paper);border:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46ch}
+.sr-k:hover{color:var(--vermilion)}
+.sr-meta{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
+  overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.sr-side{flex:none;display:flex;gap:12px;align-items:baseline}
+.sr-z{font-family:var(--mono);font-size:var(--fs-12);color:var(--paper-3);
+  white-space:nowrap;min-width:66px;text-align:right}
+.act{font-size:var(--fs-13);white-space:nowrap;border:none;text-decoration:none}
+.act.dl{color:var(--jade);font-weight:600}
+.act.dl:hover{color:var(--paper)}
+.act.src{color:var(--slate)}
+.act.src:hover{color:var(--vermilion)}
+.act.guide{color:var(--paper-3)}
+.act.guide:hover{color:var(--paper-2)}
+.act.lib{color:var(--paper-3)}
+.act.lib:hover{color:var(--gold)}
+.slist.small .sr-meta{font-size:var(--fs-10)}
+
+/* 分类头下的「回音乐库试听」提示（S3 反向链接）*/
+.libhint{margin:2px 0 var(--s2);padding-left:2px;font-size:var(--fs-11);color:var(--paper-3)}
+.libhint a{color:var(--paper-2);border-bottom:1px solid var(--rule-2)}
+.libhint a:hover{color:var(--gold)}
+
+/* 档位徽标 */
+.tierbadge{font-family:var(--mono);font-size:var(--fs-10);letter-spacing:.05em;
+  border:1px solid var(--rule-2);border-radius:3px;padding:1px 5px;flex:none}
+.tierbadge.c1{color:var(--jade);border-color:rgba(94,158,126,.5);background:var(--jade-soft)}
+.tierbadge.c2{color:var(--gold);border-color:rgba(201,162,39,.5);background:var(--gold-soft)}
+.tierbadge.c3{color:var(--slate);border-color:rgba(122,138,163,.5);background:rgba(122,138,163,.12)}
+.tierbadge.c4{color:var(--paper-3)}
+
+/* ── 分类折叠区（与 zip 站 .dimsec 同构）────────────────────────── */
+.catsec{margin:0 0 var(--s5)}
+.catsec > summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:baseline;
+  padding:11px 2px;border-bottom:1px solid var(--rule-2)}
+.catsec > summary::-webkit-details-marker{display:none}
+.catsec > summary::before{content:'▸';color:var(--paper-3);transition:transform .15s;flex:none}
+.catsec[open] > summary::before{transform:rotate(90deg)}
+.catsec > summary h3{font-size:var(--fs-16);margin:0;font-family:var(--serif);font-weight:600}
+.catsec > summary .spacer{flex:1}
+.catsec > summary .meta{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);
+  white-space:nowrap;margin:0}
+.morebtn{display:block;width:100%;text-align:center;font:inherit;font-size:var(--fs-12);
+  cursor:pointer;background:var(--ink-2);color:var(--paper-2);
+  border:1px solid var(--rule);border-radius:var(--r);padding:8px;margin:var(--s3) 0 0}
+.morebtn:hover{border-color:var(--vermilion);color:var(--paper)}
+
+/* ── 许可档说明块 ─────────────────────────────────────────────────── */
+.tierbox{margin:0 0 var(--s3)}
+.tierbox h3{display:flex;align-items:center;gap:10px;font-size:var(--fs-14);margin:0 0 6px}
+.tierbox h3 .tiern{margin-left:auto;font-family:var(--mono);font-size:var(--fs-11);
+  font-weight:400;color:var(--paper-3)}
+.tierbox p{margin:0 0 4px;font-size:var(--fs-13);color:var(--paper-2)}
+.tierbox p.meta{font-size:var(--fs-11);color:var(--paper-3)}
+
+/* ── 不收录原因聚合 ───────────────────────────────────────────────── */
+.excagg{margin:var(--s3) 0;padding:0;list-style:none;border:1px solid var(--rule);border-radius:var(--r)}
+.excagg li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;
+  padding:9px var(--s3);border-bottom:1px solid var(--rule);font-size:var(--fs-13)}
+.excagg li:last-child{border-bottom:none}
+.excagg b{color:var(--paper);min-width:11em}
+.excagg span{font-family:var(--mono);font-size:var(--fs-11);color:var(--paper-3);flex:none}
+.excagg i{font-style:normal;color:var(--paper-2);font-size:var(--fs-12);flex:1;min-width:14em}
+
+/* ── 表格（窄屏容器内滚动，不撑破页面）──────────────────────────── */
+.tblwrap{overflow-x:auto;margin:var(--s3) 0 var(--s4)}
+
+/* ── 窄屏 ─────────────────────────────────────────────────────────── */
+@media (max-width:640px){
+  .stat{gap:16px}
+  .sr-meta{display:none}
+  .sr-k{max-width:none;white-space:normal}
+  .srow{flex-wrap:wrap}
+  .sr-side{gap:9px}
+  .sr-z{min-width:0}
+  .excagg b{min-width:0}
+  .filterbox input{max-width:none}
+  .chip{font-size:var(--fs-11);padding:4px 9px}
+}
