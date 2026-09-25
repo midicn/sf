@@ -1,18 +1,21 @@
 /* sf.midicn.com · 端到端回归（jsdom）
  * ─────────────────────────────────────────────────────────────────────
- * 复用数据三站那一套：jsdom + 本地读盘 stub fetch，不起服务器、不联网。
+ * 复用数据三站那一套：jsdom + stub fetch，不起服务器。
  * 重点验三件事：① 页面脚本真能跑起来（不静默空白）② 筛选/双语交互真的生效
  * ③ **许可政策在渲染层没有被绕过**（F3 不给直链、F4 不出现、存疑不逐条列）
  *
  * 用法（NODE_PATH 指向托管 workspace，那里装了 jsdom）：
- *   NODE_PATH=<node-workspace>/node_modules node tools/e2e-test.js
+ *   NODE_PATH=<node-workspace>/node_modules node tools/e2e-test.js            # 本地产物
+ *   NODE_PATH=<node-workspace>/node_modules node tools/e2e-test.js --online   # 线上站点
+ * 项目惯例：**本地 + 线上都跑** —— 线上跑能挡住「本地对、线上 404」这类装配漏项。
  */
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
 const SITE = path.resolve(__dirname, '..');
-const HTML = path.join(SITE, 'index.html');
+const ONLINE = process.argv.includes('--online');
+const ORIGIN = 'https://sf.midicn.com/';
 
 let pass = 0, fail = 0;
 const fails = [];
@@ -22,14 +25,25 @@ function ok(name, cond, extra){
 }
 const wait = ms => new Promise(r=>setTimeout(r, ms));
 
+/* 取站点相对路径的内容：本地读盘 / 线上抓取（带退避） */
+async function loadText(rel){
+  if (!ONLINE) return fs.readFileSync(path.join(SITE, rel.replace(/\//g, path.sep)), 'utf-8');
+  for (let i=0;i<3;i++){
+    try{ const r = await fetch(ORIGIN + rel); if (r.ok) return await r.text(); }catch(e){}
+    await wait(1500*(i+1));
+  }
+  throw new Error('线上取不到 ' + rel);
+}
+
 (async () => {
-  const data = fs.readFileSync(path.join(SITE, 'data', 'soundfonts.json'), 'utf-8');
-  const rawHtml = fs.readFileSync(HTML, 'utf-8');
+  const rawHtml = await loadText('index.html');
+  const data = await loadText('data/soundfonts.json');
   /* ⚠️ 必须把 assets/shell.js 内联 —— jsdom 默认不加载外链脚本，
      不内联就会「外壳脚本永不执行」，测出的是假象（lib 站 e2e 同一处理）。 */
-  const shellJs = fs.readFileSync(path.join(SITE, 'assets', 'shell.js'), 'utf-8');
+  const shellJs = await loadText('assets/shell.js');
   const html = rawHtml.replace(/<script[^>]*src="assets\/shell\.js"[^>]*><\/script>/,
                                '<script>' + shellJs + '</script>');
+  console.log('装置：%s%s\n', ONLINE ? '线上 ' + ORIGIN : '本地产物', '');
 
   /* ① 静态层（对**原始文件**查，不看内联后的副本） */
   ok('页面引用站点样式', /assets\/site\.css/.test(rawHtml));
@@ -54,6 +68,10 @@ const wait = ms => new Promise(r=>setTimeout(r, ms));
     beforeParse(window){
       window.fetch = async (url) => {
         const rel = String(url).replace(/^https?:\/\/[^/]+\//, '').replace(/^\.\//, '');
+        if (ONLINE){
+          const r = await fetch(ORIGIN + rel, {headers:{'User-Agent':'midicn-e2e/1.0'}});
+          return { ok: r.ok, status: r.status, json: async()=>JSON.parse(await r.text()) };
+        }
         const fp = path.join(SITE, rel.replace(/\//g, path.sep));
         if (!fs.existsSync(fp)) return { ok:false, status:404, json: async()=>({}) };
         const text = fs.readFileSync(fp, 'utf-8');
