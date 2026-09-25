@@ -47,10 +47,12 @@ def esc(s) -> str:
     return html.escape(str(s if s is not None else ""), quote=True)
 
 
-def sz(mb) -> str:
+def sz(mb, src: str = "") -> str:
+    """体积展示：没有就写「未标注」而不是「—」—— 那不是零，是上游没给。"""
     if not mb:
-        return "—"
-    return ("%.2f GB" % (mb / 1024)) if mb >= 1024 else ("%.0f MB" % mb if mb >= 10 else "%.1f MB" % mb)
+        return "未标注"
+    v = ("%.2f GB" % (mb / 1024)) if mb >= 1024 else ("%.0f MB" % mb if mb >= 10 else "%.1f MB" % mb)
+    return v + ("*" if src == "head" else "")
 
 
 def bi(zh: str, en: str) -> str:
@@ -108,9 +110,14 @@ def row(e: dict, hosted: dict, *, show_licence_text: bool = False, hint=None) ->
                      'target="_blank" rel="noopener">用它试听 ↗</a>' % (
                          bi("用它试听 ↗", "Play with it ↗"), esc(e["id"])))
     else:
-        if e.get("dl_url"):
+        if e.get("dl_url") and not e.get("dl_blocked"):
             right.append('<a class="act src" %s href="%s" target="_blank" rel="noopener">来源下载 ↗</a>' % (
                 bi("来源下载 ↗", "Source ↗"), esc(e["dl_url"])))
+        elif e.get("dl_url"):
+            # 实测被 403 拒绝 → 不再给下载按钮，改给来源页（不把用户送到打不开的链接）
+            right.append('<a class="act src" %s href="%s" target="_blank" rel="noopener" '
+                         'title="上游直链拒绝直接访问（实测 403），请到来源页取">来源页 ↗</a>' % (
+                bi("来源页 ↗", "Source page ↗"), esc(e["url"])))
         right.append('<a class="act lib" %s href="https://lib.midicn.com/" target="_blank" '
                      'rel="noopener">音乐库试听 ↗</a>' % bi("音乐库试听 ↗", "Try in library ↗"))
     tier = e["tier"]

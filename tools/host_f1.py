@@ -319,8 +319,15 @@ def main(argv) -> int:
             continue
         sf2 = extract_sf2(arc, tmp)
         if not sf2:
-            print("      ✗ 包里没有 .sf2（跳过）")
-            continue
+            # ⚠️ **裸 `.sf2` 直链**（musical-artifacts 很多是这样）：下载下来的就是音色本体，
+            #    不是归档 —— 用 7-Zip 解会失败。这里先按「本身就是 SoundFont」认一次。
+            okc, why = check_sf2(arc)
+            if okc:
+                sf2 = arc
+                print("      · 直链即 .sf2（无需解包）")
+            else:
+                print("      ✗ 包里没有 .sf2，且直链也不是 SoundFont（%s）" % why)
+                continue
         okc, why = check_sf2(sf2)
         if not okc:
             print("      ✗ 校验不过：%s" % why)

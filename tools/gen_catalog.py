@@ -67,6 +67,10 @@ def project(led: dict, hosted: dict) -> dict:
             "o": 1 if r.get("direct_ok") else 0,
             "p": r["pack"], "y": r["downloads"], "g": r["group"],
             "e": r.get("note", "")[:MAX_NOTE],
+            # 体积来源（'head' 实测 / 'page' 来源页标注 / '' 未提供）与
+            # **直链是否被对方拒绝**（实测 403 → 页面改走「来源页」）
+            "ss": r.get("size_src") or "",
+            "db": 1 if r.get("dl_blocked") else 0,
             # h = 站内托管直链（S2 才有）；hz = **托管文件的实际体积**
             #     ⚠️ 必须与上游页面标注的体积分开：上游标的是压缩包大小，
             #     站内直下的是解包后的 .sf2，两者能差 2–3 倍。展示时以 hz 为准。

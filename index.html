@@ -127,9 +127,16 @@ let LANG = store.get('midicn-lang', null) || 'zh';
 function t(zh, en){ return LANG === 'zh' ? zh : en; }
 const $ = id => document.getElementById(id);
 const fmt = n => (n||0).toLocaleString('en-US');
-function sz(mb){
-  if(!mb) return '—';
-  return mb >= 1024 ? (mb/1024).toFixed(2)+' GB' : (mb >= 10 ? Math.round(mb)+' MB' : mb.toFixed(1)+' MB');
+function sz(mb, src){
+  if(!mb) return '未标注';                       /* 不写「—」：那不是「零」，是「上游没给」 */
+  const s = mb >= 1024 ? (mb/1024).toFixed(2)+' GB' : (mb >= 10 ? Math.round(mb)+' MB' : mb.toFixed(1)+' MB');
+  return s;
+}
+function szTitle(e){
+  if(!e.z) return t('上游未提供体积，且直链拒绝访问（防盗链）—— 我们宁可留空也不猜',
+                    'The source does not publish a size and blocks direct access — we leave it blank rather than guess');
+  return e.ss === 'head' ? t('我们实测（Range / HEAD）','measured by us (Range / HEAD)')
+                         : t('来源页标注','as stated on the source page');
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -211,8 +218,10 @@ function actionHTML(e){
   // 站内托管 → 直下；否则 F1/F2 给来源直链；F3 只给指引（不直链）
   let a = '';
   if(e.h) a = '<a class="act dl" href="'+esc(e.h)+'" download>'+t('站内直下 ↓','Download ↓')+'</a>';
-  else if(e.o && e.d) a = '<a class="act src" href="'+esc(e.d)+'" target="_blank" rel="noopener">'+t('来源下载 ↗','Source ↗')+'</a>';
-  else if(e.o) a = '<a class="act src" href="'+esc(e.u)+'" target="_blank" rel="noopener">'+t('来源页 ↗','Source page ↗')+'</a>';
+  else if(e.o && e.d && !e.db) a = '<a class="act src" href="'+esc(e.d)+'" target="_blank" rel="noopener">'+t('来源下载 ↗','Source ↗')+'</a>';
+  else if(e.o) a = '<a class="act src" href="'+esc(e.u)+'" target="_blank" rel="noopener" title="'+
+    (e.db ? esc(t('上游直链拒绝直接访问（实测 403），请到来源页取','The upstream refuses direct access (403); use the source page')) : '')+
+    '">'+t('来源页 ↗','Source page ↗')+'</a>';
   else a = '<a class="act guide" href="'+esc(e.u)+'" target="_blank" rel="noopener">'+t('指引（不托管）↗','Pointer ↗')+'</a>';
   // 反向链接：已托管的可**一键带过去播放**；其余回音乐库自己选文件
   return a + libLinkHTML(e);
@@ -225,7 +234,7 @@ function rowHTML(e){
       '<span class="sr-meta">'+esc(e.a||'—')+' · '+esc(SRC[e.s]||e.s)+' · '+esc(e.f.join(' / '))+ (e.p?(' in .'+esc(e.p)):'') +'</span>'+
     '</div>'+
     '<div class="sr-side">'+licBadge(e)+
-      '<span class="sr-z" title="'+(e.hz?esc(t('站内文件实测体积','actual hosted file size')):'')+'">'+sz(e.hz || e.z)+'</span>'+
+      '<span class="sr-z" title="'+esc(e.hz?t('站内文件实测体积','actual hosted file size'):szTitle(e))+'">'+sz(e.hz || e.z)+(e.z && e.ss==='head'?'*':'')+'</span>'+
       actionHTML(e)+
     '</div></li>';
 }
@@ -355,9 +364,9 @@ function render(){
   });
   $('hint').textContent = t(
     '匹配 '+fmt(list.length)+' / '+fmt(d.entries.length)+' 条；点分类标题展开/收起。'+
-    '站内直下的音色出现在第一栏，可自由分发的都在这里。',
+    '站内直下的音色出现在第一栏。带 * 的体积是我们实测的；「未标注」表示上游没给、且直链拒绝访问 —— 不猜。',
     fmt(list.length)+' / '+fmt(d.entries.length)+' records match — click a category to expand. '+
-    'Self-hosted sound banks appear in section 1.'
+    'Sizes marked * are measured by us; “未标注” means the source neither publishes nor allows a direct check.'
   );
 
   // ── 三 · 怎么用 ──
