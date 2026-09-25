@@ -267,6 +267,20 @@ async function loadText(rel){
        (f1.match(/class="act dl"/g) || []).length === nHosted,
        (f1.match(/class="act dl"/g) || []).length + ' / ' + nHosted);
     ok('F1 页托管行都给「用它试听」深链', (f1.match(/class="act lib play"/g) || []).length === nHosted);
+    /* 跨站契约：试听深链的 uid 必须等于该行的 data-id，且该 uid 真的在托管清单里
+       —— 否则 lib 播放器会「查无此音色」（这是 sf→lib 那条链路的硬约定）。 */
+    {
+      const rows = f1.match(/<li class="srow" data-id="([^"]+)"[\s\S]*?<\/li>/g) || [];
+      const bad = rows.filter(r => {
+        const id = (r.match(/data-id="([^"]+)"/) || [])[1];
+        return /class="act lib play"/.test(r) && !r.includes('/?sf=' + id);
+      });
+      const host = JSON.parse(await loadText('data/hosted.json')).files;
+      const miss = Object.keys(host).filter(k => !f1.includes('/?sf=' + k));
+      ok('F1 页：试听深链 uid 与行 id 一致、且都在托管清单里',
+         bad.length === 0 && miss.length === 0,
+         '不一致 ' + bad.length + ' · 清单里未出现 ' + miss.length);
+    }
     ok('F1 页 canonical 指向 /f1/',
        f1.includes('rel="canonical" href="https://sf.midicn.com/f1/"'));
     ok('F1 页资源前缀正确', f1.includes('src="../assets/shell.js"'));
