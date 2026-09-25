@@ -1,0 +1,64 @@
+name: Deploy sf site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # ⚠️ 只装配**要给访问者的文件**（与 lib / mid / zip 同一纪律）：
+      #    不把 tools/ 与仓库元文件暴露成线上路径。
+      #    站点是**纯静态**的 —— 页面只读 data/*.json，运行时不调用任何第三方接口。
+      - name: Assemble site
+        run: |
+          set -e
+          mkdir -p _build
+          cp index.html 404.html manifest.json robots.txt sitemap.xml _build/
+          cp -r assets _build/assets
+          cp -r data  _build/data
+
+          # 自检：页面要的数据文件必须在，且 F1 托管清单不能为空
+          test -f _build/data/soundfonts.json || { echo "::error::data/soundfonts.json 缺失"; exit 1; }
+          test -f _build/data/hosted.json     || { echo "::error::data/hosted.json 缺失（先跑 tools/host_f1.py）"; exit 1; }
+          python3 - <<'PY'
+          import json
+          d = json.load(open('_build/data/soundfonts.json', encoding='utf-8'))
+          h = json.load(open('_build/data/hosted.json',   encoding='utf-8'))
+          t = d['totals']
+          assert t['redist'] == len(d['entries']), '目录条数与可分发数不一致'
+          assert all(e['t'] in ('F1','F2','F3') for e in d['entries']), '目录里出现 F4 条目'
+          bad = [e['i'] for e in d['entries'] if e['t'] == 'F3' and e.get('d')]
+          assert not bad, 'F3 条目带了下载直链'
+          print('台账 %s 条 · 目录 %d · 托管 %d' % (t['all'], len(d['entries']), len(h['files'])))
+          PY
+          ls -la _build | head -8
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
