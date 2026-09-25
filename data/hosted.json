@@ -618,6 +618,48 @@
    "src": "https://github.com/freepats/synth-soundtrack/releases/download/20200521/SynthSoundtrack-SF2-20200521.7z",
    "src_bytes": 18137576,
    "cat": "synth"
+  },
+  "fp-synthesizer-synth-effects-synth-goblins": {
+   "file": "synth-goblins-434d4680.sf2",
+   "bytes": 21565652,
+   "sha256": "434d468021af78ea614d907d6ff83df6a1c4d23addfc74c055eba5ac04f42d87",
+   "path": "files/synth-goblins-434d4680.sf2",
+   "url": "https://sf.midicn.com/files/synth-goblins-434d4680.sf2",
+   "release": "https://github.com/midicn/music-soundfonts/releases/download/sf-soundfonts-v1/synth-goblins-434d4680.sf2",
+   "name": "Synth Goblins",
+   "author": "FreePats project",
+   "license": "CC0",
+   "src": "https://github.com/freepats/synth-goblins/releases/download/2020-06-12/SynthGoblins-SF2-20200612.7z",
+   "src_bytes": 19534910,
+   "cat": "synth"
+  },
+  "fp-synthesizer-synth-pad-synth-pad-bowed": {
+   "file": "synth-pad-bowed-d20b2c26.sf2",
+   "bytes": 25970842,
+   "sha256": "d20b2c26757c58665f83850515d68a7ecee11a87103f849be2406f026f9cf52a",
+   "path": "files/synth-pad-bowed-d20b2c26.sf2",
+   "url": "https://sf.midicn.com/files/synth-pad-bowed-d20b2c26.sf2",
+   "release": "https://github.com/midicn/music-soundfonts/releases/download/sf-soundfonts-v1/synth-pad-bowed-d20b2c26.sf2",
+   "name": "Synth Pad Bowed",
+   "author": "FreePats project",
+   "license": "CC0",
+   "src": "https://github.com/freepats/synth-pad-bowed/releases/download/2019-07-19/SynthPadBowed-SF2-20190719.7z",
+   "src_bytes": 22310184,
+   "cat": "synth"
+  },
+  "fp-synthesizer-synth-effects-synth-sci-fi": {
+   "file": "synth-sci-fi-2c4bfbb6.sf2",
+   "bytes": 25207720,
+   "sha256": "2c4bfbb66da355a9946c15b3845c4a494e9245405befac69fd2760cc033fa805",
+   "path": "files/synth-sci-fi-2c4bfbb6.sf2",
+   "url": "https://sf.midicn.com/files/synth-sci-fi-2c4bfbb6.sf2",
+   "release": "https://github.com/midicn/music-soundfonts/releases/download/sf-soundfonts-v1/synth-sci-fi-2c4bfbb6.sf2",
+   "name": "Synth Sci-Fi",
+   "author": "FreePats project",
+   "license": "CC0",
+   "src": "https://github.com/freepats/synth-scifi/releases/download/2020-05-17/SynthSciFi-SF2-20200517.7z",
+   "src_bytes": 22886392,
+   "cat": "synth"
   }
  },
  "site_base": "https://sf.midicn.com/",
