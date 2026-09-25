@@ -223,10 +223,16 @@ async function loadText(rel){
   /* ⑥ 外壳与页脚 */
   ok('页脚法务行已填实时数字', new RegExp(String(nRed)).test($('#footLegal').textContent));
   ok('页脚备注已填', $('#footNote').textContent.trim().length > 0);
+  /* 2026-09-26：sf **进全站导航** —— 数据四站的导航自此完全一致（lib/mid/zip/sf），
+     sf 自己是第 4 项，且不再有站点特例覆盖。 */
   const navHrefs = $$('header .nav a').map(a => a.getAttribute('href'));
-  ok('导航第 6 项指向本站', navHrefs[5] === 'https://sf.midicn.com/', navHrefs[5]);
-  ok('导航顺序与数据三站一致', navHrefs.slice(0,3).join() ===
-     ['https://lib.midicn.com/','https://mid.midicn.com/','https://zip.midicn.com/'].join());
+  const DATA4 = ['https://lib.midicn.com/', 'https://mid.midicn.com/',
+                 'https://zip.midicn.com/', 'https://sf.midicn.com/'];
+  ok('导航第 4 项就是本站（sf 已进全站导航）', navHrefs[3] === 'https://sf.midicn.com/', navHrefs[3]);
+  ok('导航前四项与数据四站顺序一致', navHrefs.slice(0, 4).join() === DATA4.join(),
+     navHrefs.slice(0, 4).join(' · '));
+  ok('导航共 7 项且含许可与法律', navHrefs.length === 7 && /licenses/.test(navHrefs[6] || ''),
+     navHrefs.length + ' 项');
 
   /* ⑦ S4 专区页（**服务端渲染**，只查内容，不需要 jsdom 交互）
      ─────────────────────────────────────────────────────────────────

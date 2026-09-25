@@ -10,7 +10,7 @@
   ① 数据一致性   data/soundfonts.json 必须与台账**同源可复现**（跑 gen_catalog.py --check）
   ② 许可红线     F4 一条都不许出现在目录里；F3 不许有下载直链；「存疑」不许逐条列出；
                  托管直链必须只出现在 F1/F2
-  ③ 外壳一致性   header/footer 两页逐字相同 · 导航顺序固定为 7 项 · shell.js 与 lib 真源哈希相同
+  ③ 外壳一致性   header/footer 两页逐字相同 · 导航顺序固定为 7 项（数据四站）· shell.js 与 lib 真源哈希相同
   ④ 死链        站内相对引用（assets/ data/ 页面）全部可达；产物必备文件在位
   ⑤ 元数据      title / description / canonical / og / twitter / JSON-LD / robots / sitemap / manifest
   ⑥ 双语与表述  data-zh / data-en 成对；无 TODO 残留；台湾/香港/澳门必须带「中国」前缀
@@ -37,10 +37,13 @@ LEDGER = MIDI / "lib" / "work" / "docs" / "soundfonts.json"
 LIB_SHELL = MIDI / "lib" / "site" / "assets" / "shell.js"
 PY = sys.executable
 
+# 统一导航的**唯一真源**是 `_apply_site_shell.py` 的 NAV —— 这里只做「产物 == 期望」的对账。
+# ⚠️ 2026-09-26 sf 进全站导航后，数据四站（lib/mid/zip/sf）连号排在最前，再是 lib 的站内页。
 NAV_EXPECT = [
     "https://lib.midicn.com/", "https://mid.midicn.com/", "https://zip.midicn.com/",
+    "https://sf.midicn.com/",
     "https://lib.midicn.com/sources.html", "https://lib.midicn.com/lyrics.html",
-    "https://sf.midicn.com/", "https://lib.midicn.com/licenses.html",
+    "https://lib.midicn.com/licenses.html",
 ]
 RE_HEADER = re.compile(r'<header>.*?</header>', re.S)
 RE_FOOTER = re.compile(r'<footer>.*?</footer>', re.S)
@@ -195,7 +198,7 @@ def gate3(rep: Rep):
         if got != tuple(NAV_EXPECT):
             rep.add(3, '导航顺序不符：%s' % ' → '.join(u.replace('https://', '') for u in got))
         else:
-            rep.ok(3, '导航顺序固定为 7 项（数据三站 + sf 自身）')
+            rep.ok(3, '导航顺序固定为 7 项（数据四站 lib/mid/zip/sf + lib 三个站内页）')
     # shell.js 必须与 lib 真源逐字节相同
     a = SITE / 'assets' / 'shell.js'
     if not a.exists():
