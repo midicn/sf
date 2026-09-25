@@ -97,7 +97,12 @@ async function loadText(rel){
   ok('目录渲染出条目', $$('#catalog .srow').length > 0, $$('#catalog .srow').length + ' 行');
   ok('分类折叠区渲染', $$('#catalog details.catsec').length >= 10, $$('#catalog details.catsec').length + ' 个分类');
   ok('总览条 5 项', $$('#stat > div').length === 5);
-  ok('概览文案含可分发总数', /718/.test($('#lede').textContent));
+  /* ⚠️ 断言里的数字**一律从数据读**，不要写死 ——
+     写死一次，以后每次台账增长都会误报（本轮就因此红了 3 项）。 */
+  const DOC = JSON.parse(data);
+  const nRed = DOC.totals.redist, nHosted = DOC.totals.hosted;
+  ok('概览文案含可分发总数', new RegExp(String(nRed)).test($('#lede').textContent),
+     '可分发 ' + nRed);
   ok('第一栏（可直接下载）有内容', $$('#f1 .srow').length > 0, $$('#f1 .srow').length + ' 行');
   ok('许可分级四档都渲染', $$('#tiers .tierbox').length === 4);
   ok('不收录聚合已渲染', $$('.excagg li').length >= 6, $$('.excagg li').length + ' 类原因');
@@ -148,9 +153,19 @@ async function loadText(rel){
     const want = Math.round(e0.hz) + ' MB';
     return shown === want || shown === e0.hz.toFixed(1) + ' MB';
   })(), '首条托管条目的体积按 hz 渲染');
-  ok('站内托管数 == 清单里的托管数', dl.length === JSON.parse(data).totals.hosted,
-     dl.length + ' / ' + JSON.parse(data).totals.hosted);
+  /* 目录是**分类折叠 + 每类截断**渲染的，所以 DOM 里的托管行数 ≤ 总数 ——
+     这里按**数据层**对账（DOM 只断言「第一栏有托管行」）。 */
+  ok('数据层：托管条数 == 清单条数',
+     DOC.entries.filter(e => e.h).length === nHosted,
+     DOC.entries.filter(e => e.h).length + ' / ' + nHosted);
   ok('每条都有「音乐库试听」反向链接', rows.every(r => r.querySelector('.act.lib')));
+  /* 第一栏含「已托管 + 未托管但 ≤50MB」两类：前者必须有「用它试听」深链，
+     后者只给来源链接（所以不能要求整栏都有深链）。 */
+  const f1rows = $$('#f1 .srow');
+  const f1host = f1rows.filter(r => r.querySelector('.act.dl'));
+  ok('第一栏渲染且托管行都带「用它试听」深链',
+     f1rows.length > 0 && f1host.length > 0 && f1host.every(r => r.querySelector('.act.lib.play')),
+     f1rows.length + ' 行（其中托管 ' + f1host.length + '）');
   ok('分类头下有回音乐库的曲目提示', $$('#catalog .libhint').length > 0,
      $$('#catalog .libhint').length + ' 条提示');
 
@@ -185,7 +200,7 @@ async function loadText(rel){
   await wait(80);
   const sf2rows = $$('#catalog .srow');
   ok('「仅 .sf2」筛选生效（匹配数下降）',
-     Number(($('#hint').textContent.match(/匹配\s*([\d,]+)/) || [0,0])[1].replace(/,/g,'')) < 718,
+     Number(($('#hint').textContent.match(/匹配\s*([\d,]+)/) || [0,0])[1].replace(/,/g,'')) < nRed,
      $('#hint').textContent.slice(0, 40));
   ok('「仅 .sf2」下每行 meta 都含 sf2',
      sf2rows.length > 0 && sf2rows.every(r => /sf2/.test(r.querySelector('.sr-meta').textContent)),
@@ -206,7 +221,7 @@ async function loadText(rel){
   ok('切回中文正常', d.documentElement.lang === 'zh' && /实测记录/.test($('#lede').textContent));
 
   /* ⑥ 外壳与页脚 */
-  ok('页脚法务行已填实时数字', /718/.test($('#footLegal').textContent));
+  ok('页脚法务行已填实时数字', new RegExp(String(nRed)).test($('#footLegal').textContent));
   ok('页脚备注已填', $('#footNote').textContent.trim().length > 0);
   const navHrefs = $$('header .nav a').map(a => a.getAttribute('href'));
   ok('导航第 6 项指向本站', navHrefs[5] === 'https://sf.midicn.com/', navHrefs[5]);
