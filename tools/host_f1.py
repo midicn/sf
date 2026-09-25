@@ -162,6 +162,29 @@ def check_sf2(p: Path) -> tuple[bool, str]:
     return True, "RIFF/sfbk OK"
 
 
+def http_probe(url: str, tries: int = 4, timeout: int = 60):
+    """探测远端资产：先 `Range: bytes=0-0`（省流量，206 + Content-Range 给出总长），
+    失败再退回 HEAD。返回 (状态码, 总字节数 or None)。"""
+    for i in range(tries):
+        for method, hdrs in (("GET", {"Range": "bytes=0-0"}), ("HEAD", {})):
+            try:
+                req = urllib.request.Request(url, method=method, headers={
+                    "User-Agent": UA, **hdrs})
+                with urllib.request.urlopen(req, timeout=timeout, context=CTX) as r:
+                    cr = r.headers.get("Content-Range") or ""
+                    total = r.headers.get("Content-Length")
+                    if "/" in cr:
+                        total = cr.rsplit("/", 1)[-1]
+                    return r.status, (int(total) if (total or "").isdigit() else None)
+            except urllib.error.HTTPError as e:
+                if e.code in (404, 403, 401):
+                    return e.code, None
+            except Exception:                                        # noqa: BLE001
+                pass
+        time.sleep(3 * (i + 1))
+    return None, None
+
+
 def sha256(p: Path) -> str:
     h = hashlib.sha256()
     with p.open("rb") as fh:
@@ -175,6 +198,8 @@ def main(argv) -> int:
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--verify-online", action="store_true",
+                    help="核对线上直链可用且字节数一致（走 Range 探测，省流量）")
     ap.add_argument("--uid", default="", help="逗号分隔的条目 id（默认用精选方案）")
     ap.add_argument("--upload-hint", action="store_true")
     a = ap.parse_args(argv[1:])
@@ -184,7 +209,7 @@ def main(argv) -> int:
     picked = ([c for c in cands if c["id"] in set(a.uid.split(","))] if a.uid
               else curated(cands))
 
-    if a.list or not (a.apply or a.verify or a.upload_hint):
+    if a.list or not (a.apply or a.verify or a.verify_online or a.upload_hint):
         print("台账 %s 条 · 可分发 %d · F1+sf2+≤50MB **可托管 %d** 条" % (
             led["total"], led["redistributable"], len(cands)))
         print("\n精选方案 %d 条 · 合计 %.1f MB：" % (
@@ -211,6 +236,26 @@ def main(argv) -> int:
         print("上传后回查：python lib/work/tools/_upload_release.py --repo %s --tag %s --verify"
               % (RELEASE_REPO, RELEASE_TAG))
         return 0
+
+    if a.verify_online:
+        if not HOSTED.exists():
+            print("✗ 还没有托管清单，先跑 --apply")
+            return 2
+        hd = json.loads(HOSTED.read_text(encoding="utf-8"))
+        print("核对线上直链（%s → %s）…" % (RELEASE_REPO, RELEASE_TAG))
+        bad = []
+        for i, (uid, v) in enumerate(hd["files"].items(), 1):
+            st, n = http_probe(v["url"])
+            okk = st in (200, 206) and n == v["bytes"]
+            if not okk:
+                bad.append((v["file"], st, n, v["bytes"]))
+            print("  [%2d/%2d] %s %-46s HTTP %-4s %s" % (
+                i, len(hd["files"]), "✓" if okk else "✗", v["file"], st,
+                ("%s B" % n) if n is not None else "—"))
+        print("\n线上核对 %d 个 · 不一致 %d" % (len(hd["files"]), len(bad)))
+        for f, st, n, exp in bad[:10]:
+            print("    ✗ %s  线上 %s/%s · 期望 %s" % (f, st, n, exp))
+        return 2 if bad else 0
 
     if a.verify:
         hd = json.loads(HOSTED.read_text(encoding="utf-8")) if HOSTED.exists() else {"files": {}}
