@@ -315,6 +315,32 @@ async function loadText(rel){
     })(), $('#zones') ? $('#zones').textContent.slice(0, 80) : '无');
   }
 
+  /* ⑧ 专区页的**页内筛选**（服务端渲染页上的前端补丁）
+     ⚠️ 这条判据是被逼出来的：筛选脚本原先放在清单**之前**的 DOM 位置，
+        于是 `querySelectorAll('.srow')` 拿到 0 行 → 「筛选出 0 / 0 条」、
+        一行也藏不掉，但**页面上看不出报错**（看着像「筛不到而已」）。
+        没有这条断言就会一直静默坏着。 */
+  console.log('\n【筛选】专区页页内筛选');
+  {
+    const f1html = await loadText('f1/index.html');
+    const dom2 = new JSDOM(f1html, { runScripts: 'dangerously', url: 'https://sf.midicn.com/f1/' });
+    const w2 = dom2.window, d2 = w2.document;
+    await wait(80);                       // 等 DOMContentLoaded 处理完
+    const inp = d2.getElementById('tq'), out = d2.getElementById('tqn');
+    const vis = () => d2.querySelectorAll('.srow:not([hidden])').length;
+    const all = d2.querySelectorAll('.srow').length;
+    ok('筛选框在位且初始不过滤', !!inp && vis() === all, vis() + ' / ' + all);
+    const type = v => { inp.value = v; inp.dispatchEvent(new w2.Event('input')); };
+    type('bagpipe'); const nBag = vis();
+    ok('筛 bagpipe 能收敛（不是 0 也不是全部）', nBag > 0 && nBag < all, nBag + ' / ' + all);
+    type('cc0'); ok('按**具体许可名**筛（CC0）能命中', vis() > 0, String(vis()));
+    /* ⚠️ 计数文案要在**有查询**时查 —— 清空后它本来就该是空的（自己写错过一次） */
+    ok('筛选有计数反馈', /筛选出|entries/.test(out.textContent), out.textContent.slice(0, 40));
+    type('zzzzz'); ok('筛不存在的词 → 0 行', vis() === 0, String(vis()));
+    type('');      ok('清空后恢复全部', vis() === all, vis() + ' / ' + all);
+    dom2.window.close();
+  }
+
   console.log('\n===== 结果 (' + (pass + fail) + ' 项): ' + pass + '/' + (pass + fail) + ' 通过 =====');
   if (fails.length) console.log('失败项:\n  - ' + fails.join('\n  - '));
   process.exit(fail ? 1 : 0);

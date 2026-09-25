@@ -80,6 +80,56 @@ def head(title: str, desc: str, *, css_extra: str = "") -> str:
 """
 
 
+# 专区页的**页内筛选**（纯前端，只做隐藏，不依赖 JS 也能看全表）——
+# 首页有筛选框，而这三页是服务端渲染的「全量清单」，从搜索直接进来的访客
+# 面对 304 / 589 行没有筛法，体验是断的。这里补上同款输入框。
+TIER_FILTER = """
+  <div class="panel filterbox">
+    <div class="panel-bd">
+      <input id="tq" type="search" autocomplete="off"
+             data-ph-zh="在这 %(n)d 条里筛选（名称 / 作者 / 来源 / 许可，如 piano、CC0、FreePats）…"
+             data-ph-en="Filter these %(n)d entries (name / author / source / licence, e.g. piano, CC0, FreePats)…"
+             placeholder="在这 %(n)d 条里筛选…">
+      <p class="meta" id="tqn" style="margin:var(--s3) 0 0"></p>
+    </div>
+  </div>
+<script>
+(function(){
+  var box = document.getElementById('tq'), out = document.getElementById('tqn');
+  if (!box) return;
+  // 这几页没有首页那套 i18n 助手，只按 <html lang> 出一个最简 t()
+  function t(zh, en){ return String(document.documentElement.lang||'zh').slice(0,2)==='en' ? en : zh; }
+  /* ⚠️ 必须等 DOM 解析完再收集 `.srow` —— 这段脚本位于清单**之前**（紧跟筛选框），
+     立即查询会拿到 0 行，于是「筛选出 0 / 0 条」且一行都藏不掉。 */
+  document.addEventListener('DOMContentLoaded', function(){
+    var secs = [].slice.call(document.querySelectorAll('details.catsec'));
+    var rows = [].slice.call(document.querySelectorAll('.srow'));
+    function apply(){
+      var q = (box.value || '').trim().toLowerCase();
+      var shown = 0;
+      rows.forEach(function(r){
+        var hit = !q || r.textContent.toLowerCase().indexOf(q) >= 0;
+        r.hidden = !hit;
+        if (hit) shown++;
+      });
+      // 分组标题：整组都被筛掉就收起，避免留一堆空标题
+      secs.forEach(function(s){
+        var vis = [].slice.call(s.querySelectorAll('.srow')).some(function(r){ return !r.hidden; });
+        s.hidden = !vis;
+        if (q && vis) s.open = true;
+      });
+      out.textContent = q
+        ? t('筛选出 ' + shown + ' / ' + rows.length + ' 条', shown + ' / ' + rows.length + ' entries')
+        : '';
+    }
+    box.addEventListener('input', apply);
+    apply();
+  });
+})();
+</script>
+"""
+
+
 FOOT = """
 <footer><div class="wrap">
   <div class="fbar">
@@ -133,15 +183,19 @@ def row(e: dict, hosted: dict, *, show_licence_text: bool = False, hint=None) ->
     return (
         '<li class="srow" data-id="%s"><div class="sr-main">'
         '<a class="sr-k" href="%s" target="_blank" rel="noopener" title="%s">%s</a>'
-        '<span class="sr-meta">%s · %s · %s%s</span>%s%s'
+        # 元信息行：作者 · 来源 · **具体许可名** · 格式。
+        # 许可名必须在这里出现 —— 只给「F1」这个档位徽章，读者无法知道到底是 CC0 还是 WTFPL，
+        # 而且按「CC0」筛选会一条都搜不到（实测踩过）。
+        '<span class="sr-meta">%s · %s · %s · %s%s</span>%s%s'
         '</div><div class="sr-side">'
         '<span class="tierbadge %s">%s</span>'
         '<span class="sr-z">%s</span>%s'
         '</div></li>' % (
             esc(e["id"]), esc(e["url"]), esc(e["name"]), esc(e["name"]),
             esc(e.get("author") or "—"), esc(SRC_NAME.get(e["source"], e["source"])),
+            esc(e.get("license") or "—"),
             esc(fmts), (" in ." + esc(e["pack"])) if e.get("pack") else "",
-            note, hit, cls, tier, sz(e.get("size_mb")), "".join(right))
+            note, hit, cls, tier, sz(e.get("size_mb"), e.get("size_src") or ""), "".join(right))
     )
 
 
@@ -172,6 +226,7 @@ def sections(entries: list[dict], cats: dict, hosted: dict, *, show_licence_text
 def page_f2(led: dict, hosted: dict) -> str:
     ents = [e for e in led["entries"] if e["tier"] == "F2"]
     ents.sort(key=lambda e: e["name"].lower())
+    filt = TIER_FILTER % dict(n=len(ents))
     by_lic: dict[str, int] = {}
     for e in ents:
         by_lic[e["license"]] = by_lic.get(e["license"], 0) + 1
@@ -189,6 +244,7 @@ def page_f2(led: dict, hosted: dict) -> str:
     "These licences (CC BY / MIT / BSD / ISC) let you use the banks commercially and remix them — the only "
     "condition is <b>attribution</b>. All " + str(len(ents)) + " F2 banks are listed below with <b>who to credit</b>, "
     "<b>what the licence actually says</b>, and <b>where to get it</b>.")}>这一档的许可允许商用、也允许改作，唯一条件是署名。</p>
+{filt}
 
   <div class="stat">
     <div><b>{len(ents)}</b><span {bi("条 F2 音色", "F2 banks")}>条 F2 音色</span></div>
@@ -280,6 +336,7 @@ def page_f1(led: dict, hosted: dict) -> str:
         for k, v in sorted(by_lic.items(), key=lambda kv: -kv[1]))
     hrows = "".join(row(e, hosted) for e in ents if e["id"] in hosted)
     rest = [e for e in ents if e["id"] not in hosted]
+    filt = TIER_FILTER % dict(n=len(ents))
 
     body = f"""
 <main class="doc wide">
@@ -293,6 +350,7 @@ def page_f1(led: dict, hosted: dict) -> str:
     "<b>commercial use, remixing and redistribution all need no credit</b>. So the site "
     "<b>hosts the suitable ones right here</b>: “Download” grabs the file, “Play with it” "
     "opens it in the library player.")}></p>
+{filt}
 
   <div class="stat">
     <div><b>{len(ents)}</b><span {bi("条 F1 音色", "F1 banks")}>条 F1 音色</span></div>
@@ -356,6 +414,7 @@ def page_ethnic(led: dict, hosted: dict) -> str:
     ents = [e for e in led["entries"] if e["cat"] == "ethnic" and e["redistributable"]]
     ents.sort(key=lambda e: (e.get("size_mb") or 9e9, e["name"].lower()))
     hosted_n = sum(1 for e in ents if e["id"] in hosted)
+    filt = TIER_FILTER % dict(n=len(ents))
 
     def hint(e) -> tuple:
         """库内对应曲目：返回 (中文, English)，由 row() 放进属性位置"""
@@ -379,6 +438,7 @@ def page_ethnic(led: dict, hosted: dict) -> str:
     "The library holds <b>10,473 Chinese folk songs</b> and <b>23,250 Irish tunes</b> — a General MIDI bank always "
     "sounds a bit off on them. This page gathers ethnic and world banks, and for each one says <b>which repertoire "
     "in the library suits it</b>.")}></p>
+{filt}
 
   <div class="stat">
     <div><b>{len(ents)}</b><span {bi("可分发民族音色", "redistributable")}>可分发民族音色</span></div>
