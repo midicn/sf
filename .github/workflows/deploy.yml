@@ -33,10 +33,16 @@ jobs:
           cp index.html 404.html manifest.json robots.txt sitemap.xml _build/
           cp -r assets _build/assets
           cp -r data  _build/data
+          # ⚠️ **显式复制清单**：新增站点文件/目录必须在这里登记，否则线上 404
+          #    （专区页就因此漏过一次）。下面还有一步专门断言它们真的在产物里。
+          cp -r f2     _build/f2
+          cp -r ethnic _build/ethnic
 
           # 自检：页面要的数据文件必须在，且 F1 托管清单不能为空
           test -f _build/data/soundfonts.json || { echo "::error::data/soundfonts.json 缺失"; exit 1; }
           test -f _build/data/hosted.json     || { echo "::error::data/hosted.json 缺失（先跑 tools/host_f1.py）"; exit 1; }
+          test -f _build/f2/index.html        || { echo "::error::f2/index.html 未登记进装配清单"; exit 1; }
+          test -f _build/ethnic/index.html    || { echo "::error::ethnic/index.html 未登记进装配清单"; exit 1; }
           python3 - <<'PY'
           import json
           d = json.load(open('_build/data/soundfonts.json', encoding='utf-8'))
