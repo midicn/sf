@@ -111,10 +111,23 @@ async function loadText(rel){
   /* ③b S2/S3 新能力：站内直下 + 反向链接 */
   const dl = rows.filter(r => r.querySelector('.act.dl'));
   ok('站内托管条目有直下按钮', dl.length > 0, dl.length + ' 条');
-  ok('直下按钮都带 download 属性与 Release 地址',
+  ok('直下按钮都带 download，且指向**本站源**（有 CORS，播放器才取得到）',
      dl.every(r => {
        const a = r.querySelector('.act.dl');
-       return a.hasAttribute('download') && /releases\/download\//.test(a.getAttribute('href'));
+       return a.hasAttribute('download') && /^https:\/\/sf\.midicn\.com\/files\//.test(a.getAttribute('href'));
+     }), '例：' + (dl[0] ? dl[0].querySelector('.act.dl').getAttribute('href') : '—'));
+  ok('已托管条目给「一键带过去播放」深链（?sf=<uid>）',
+     dl.every(r => {
+       const a = r.querySelector('.act.lib.play');
+       if (!a) return false;
+       const href = a.getAttribute('href');
+       const id = r.getAttribute('data-id');
+       return href === 'https://lib.midicn.com/?sf=' + encodeURIComponent(id);
+     }), dl.length + ' 条深链');
+  ok('未托管条目只给音乐库首页（不带 sf 参数）',
+     rows.filter(r => !r.querySelector('.act.dl')).every(r => {
+       const a = r.querySelector('.act.lib');
+       return a && a.getAttribute('href') === 'https://lib.midicn.com/';
      }));
   ok('托管条目显示的是**站内实测体积**（不是上游压缩包大小）', (() => {
     const doc = JSON.parse(data);

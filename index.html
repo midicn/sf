@@ -151,7 +151,14 @@ const LIBHINT = {
   sfx:{zh:'音效类，按需取用', en:'Sound effects — use as needed.'},
   other:{zh:'任意曲目都可换用', en:'Usable on any track.'},
 };
-function libLinkHTML(){
+function libLinkHTML(e){
+  // 已托管的音色 → **带 uid 的深链**：音乐库会据此自动把该音色装进播放器（服务端要有 CORS）
+  // 未托管的 → 只能回音乐库首页，自己选本地文件
+  if(e.h && e.i){
+    return '<a class="act lib play" href="'+LIB+'?sf='+encodeURIComponent(e.i)+'" target="_blank" rel="noopener" '+
+      'title="'+t('在音乐库里用这个音色播放（自动装好，不用手动选文件）','Open the library with this sound bank preloaded')+'">'+
+      t('用它试听 ↗','Play with it ↗')+'</a>';
+  }
   return '<a class="act lib" href="'+LIB+'" target="_blank" rel="noopener" '+
     'title="'+t('下载后在音乐库播放器的「音色」里选「选择本地音色文件…」','Load it in the library player: choose “Select local sound bank…”')+'">'+
     t('音乐库试听 ↗','Try in library ↗')+'</a>';
@@ -204,8 +211,8 @@ function actionHTML(e){
   else if(e.o && e.d) a = '<a class="act src" href="'+esc(e.d)+'" target="_blank" rel="noopener">'+t('来源下载 ↗','Source ↗')+'</a>';
   else if(e.o) a = '<a class="act src" href="'+esc(e.u)+'" target="_blank" rel="noopener">'+t('来源页 ↗','Source page ↗')+'</a>';
   else a = '<a class="act guide" href="'+esc(e.u)+'" target="_blank" rel="noopener">'+t('指引（不托管）↗','Pointer ↗')+'</a>';
-  // S3 · 反向链接：每条都能回音乐库试听（与是否托管无关，F3 也给）
-  return a + libLinkHTML();
+  // 反向链接：已托管的可**一键带过去播放**；其余回音乐库自己选文件
+  return a + libLinkHTML(e);
 }
 
 function rowHTML(e){
@@ -297,9 +304,11 @@ function render(){
   const hosted = f1.filter(e=>e.h);
   $('f1Lede').innerHTML = t(
     '<b>'+fmt(f1.length)+'</b> 条 F1 音色（零署名负担、零传染）。其中 <b>'+fmt(hosted.length)+
-    '</b> 条本站已托管、点击即下；其余给<b>来源直链</b>（上游官方地址，同样是许可允许的）。',
+    '</b> 条本站已托管，点「<b>站内直下</b>」下载、点「<b>用它试听</b>」直接去音乐库装上播放；'+
+    '其余给<b>来源直链</b>（上游官方地址，同样是许可允许的）。',
     '<b>'+fmt(f1.length)+'</b> F1 sound banks (no attribution, no copyleft). <b>'+fmt(hosted.length)+
-    '</b> are self-hosted here — one click; the rest link to their <b>official upstream</b>.'
+    '</b> are hosted here — download them, or hit “<b>Play with it</b>” to open the library with that bank preloaded. '+
+    'The rest link to their <b>official upstream</b>.'
   );
   $('f1').innerHTML = '<ul class="slist">'+
     f1.filter(e=>e.h || (e.z && e.z<=50)).slice(0,60).map(rowHTML).join('')+'</ul>';
@@ -340,15 +349,15 @@ function render(){
 
   // ── 三 · 怎么用 ──
   $('steps').innerHTML = (LANG === 'zh' ? [
-    '挑一个音色：优先第一栏的 <b>F1</b>（无需署名），需要管弦/钢琴可看 F2 专区。',
-    '下载 <code>.sf2</code> 文件（若是 <code>.7z</code> / <code>.zip</code>，先解压取出里面的 <code>.sf2</code>）。',
-    '打开 <a href="https://lib.midicn.com/">音乐库</a>任意播放器，在「音色」下拉框选「<b>选择本地音色文件…</b>」，挑中刚才那个 <code>.sf2</code>。',
-    '选好后会存进浏览器缓存，下次自动沿用；换回内置音色只需选回第一项。',
+    '挑一个音色：优先第一栏的 <b>F1</b>（无需署名）。',
+    '<b>最省事</b>：在已托管的条目上点「<b>用它试听 ↗</b>」—— 音乐库会<b>自动装好这个音色</b>，直接点曲目就能听。',
+    '也可以点「站内直下」把 <code>.sf2</code> 存下来，再到 <a href="https://lib.midicn.com/">音乐库</a>播放器的「音色」里选「选择本地音色文件…」；若是 <code>.7z</code>/<code>.zip</code> 先解压取出里面的 <code>.sf2</code>。',
+    '选好后会存进浏览器缓存，下次自动沿用；换回内置音色只需在「音色」里选回第一项。',
   ] : [
-    'Pick one — start with <b>F1</b> in section 1 (no attribution needed); orchestral and piano banks are mostly F2.',
-    'Download the <code>.sf2</code> (if it arrives as <code>.7z</code> / <code>.zip</code>, unzip it first to get the <code>.sf2</code>).',
-    'Open any player on the <a href="https://lib.midicn.com/">library</a>, choose “<b>Select local sound bank…</b>” in the soundfont menu, and pick that <code>.sf2</code>.',
-    'It is remembered in browser storage next time; pick the first entry to go back to the built-in bank.',
+    'Pick one — start with <b>F1</b> in section 1 (no attribution needed).',
+    '<b>Easiest</b>: click “<b>Play with it ↗</b>” on a hosted entry — the library loads that bank for you, then just hit any track.',
+    'Or download the <code>.sf2</code> and open the <a href="https://lib.midicn.com/">library</a>, choosing “Select local sound bank…” in the soundfont menu (unzip <code>.7z</code>/<code>.zip</code> first to get the <code>.sf2</code>).',
+    'Either way it is remembered in browser storage; pick the first entry to return to the built-in bank.',
   ]).map(x=>'<li>'+x+'</li>').join('');
   $('use').innerHTML = t(
     '<p><b>浏览器只吃 <code>.sf2</code></b>：本站的「可直接使用」标注即指此。'+

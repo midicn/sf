@@ -46,9 +46,46 @@ jobs:
           assert all(e['t'] in ('F1','F2','F3') for e in d['entries']), '目录里出现 F4 条目'
           bad = [e['i'] for e in d['entries'] if e['t'] == 'F3' and e.get('d')]
           assert not bad, 'F3 条目带了下载直链'
+          assert h['files'], '托管清单为空'
           print('台账 %s 条 · 目录 %d · 托管 %d' % (t['all'], len(d['entries']), len(h['files'])))
           PY
-          ls -la _build | head -8
+
+      # ── 音色文件：从 Release 拉进产物，由本站源提供 ────────────────────
+      # 为什么绕这一道：**GitHub Release 资产不带 `Access-Control-Allow-Origin`**，
+      # 浏览器 fetch 不到 → 音乐库那条「选音色即播」的路就走不通。
+      # 本站（GitHub Pages）带 `ACAO: *` 且境内可达，所以把字节放到站点源上，
+      # Release 只当**字节源 + 直下镜像**（与 lib 站「从 Release 装配」同一模式）。
+      - name: Fetch hosted soundfonts from Release
+        run: |
+          set -e
+          python3 - <<'PY'
+          import json, os, hashlib, subprocess, sys
+          hd = json.load(open('data/hosted.json', encoding='utf-8'))
+          out = '_build/files'
+          os.makedirs(out, exist_ok=True)
+          bad = []
+          for i, (uid, v) in enumerate(hd['files'].items(), 1):
+              dst = os.path.join(out, v['file'])
+              url = v.get('release') or v['url']
+              r = subprocess.run(['curl', '-sSL', '--retry', '4', '--retry-delay', '5',
+                                  '--retry-all-errors', '-o', dst, url])
+              if r.returncode != 0 or not os.path.exists(dst):
+                  bad.append((v['file'], '下载失败')); continue
+              n = os.path.getsize(dst)
+              h = hashlib.sha256(open(dst, 'rb').read()).hexdigest()
+              if n != v['bytes'] or h != v['sha256']:
+                  bad.append((v['file'], '校验不符 %s/%s vs %s/%s' % (n, h[:12], v['bytes'], v['sha256'][:12])))
+              if i % 10 == 0 or i == len(hd['files']):
+                  print('  %d/%d' % (i, len(hd['files'])), flush=True)
+          if bad:
+              for f, why in bad[:10]:
+                  print('::error::%s %s' % (f, why))
+              sys.exit('音色文件装配失败：%d 个（字节源 %s）' % (len(bad), hd.get('release_tag')))
+          total = sum(v['bytes'] for v in hd['files'].values())
+          print('装配 %d 个音色 · %.1f MB · sha256 全部一致' % (len(hd['files']), total / 1048576))
+          PY
+          ls _build/files | head -5
+          du -sh _build
 
       - name: Setup Pages
         id: pages

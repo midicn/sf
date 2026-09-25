@@ -53,6 +53,9 @@
 .act.guide:hover{color:var(--paper-2)}
 .act.lib{color:var(--paper-3)}
 .act.lib:hover{color:var(--gold)}
+/* 已托管的音色：一键带去音乐库播放（比「下载再手动选文件」强，视觉上要更显眼）*/
+.act.lib.play{color:var(--gold);font-weight:600}
+.act.lib.play:hover{color:var(--paper)}
 .slist.small .sr-meta{font-size:var(--fs-10)}
 
 /* 分类头下的「回音乐库试听」提示（S3 反向链接）*/

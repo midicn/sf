@@ -51,6 +51,12 @@ SEVENZ = Path(r"C:\Program Files\7-Zip\7z.exe")
 RELEASE_TAG = "sf-soundfonts-v1"
 RELEASE_REPO = "midicn/music-soundfonts"
 RELEASE_BASE = "https://github.com/%s/releases/download/%s/" % (RELEASE_REPO, RELEASE_TAG)
+# ⚠️ **站点源才是对外地址**（下载直链 + 音乐库播放器取音色都用它）：
+#    GitHub Release 资产**不带 `Access-Control-Allow-Origin`** → 浏览器 fetch 不到，
+#    所以「选音色即播」那条路必须走本站源。`sf.midicn.com`（GitHub Pages）带 `ACAO: *` ✓。
+#    Release 保留为**字节源 + 直下镜像**，由站点 CI 拉进 `_build/files/`（见 deploy.yml）。
+SITE_BASE = "https://sf.midicn.com/"
+SITE_FILES = "files"                      # 站点内目录名
 
 MAX_MB = 50.0
 # 精选配额：**非合成类全取**（每类都是本库用得上的：民族/钢琴/管弦/风琴/吉他/鼓），
@@ -226,15 +232,16 @@ def main(argv) -> int:
             print("✗ 还没有托管清单，先跑 --apply")
             return 2
         hd = json.loads(HOSTED.read_text(encoding="utf-8"))
-        print("上传（一条命令，需要 midicn/music-soundfonts 的写权限）：")
+        print("上传（一条命令，需要 %s 的写权限）：" % RELEASE_REPO)
         print("  python lib/work/tools/_upload_release.py --repo %s --tag %s \\" % (
             RELEASE_REPO, RELEASE_TAG))
-        print("      --name 'SoundFont 镜像 %s' --dir sf/files --ext .sf2 --apply" % RELEASE_TAG)
+        print("      --name 'SoundFont 镜像 %s' --dir sf/files --ext .sf2" % RELEASE_TAG)
         print("\n共 %d 个文件 · %.1f MB" % (
             len(hd["files"]),
             sum(v["bytes"] for v in hd["files"].values()) / 1048576))
-        print("上传后回查：python lib/work/tools/_upload_release.py --repo %s --tag %s --verify"
-              % (RELEASE_REPO, RELEASE_TAG))
+        print("\n⚠️ 上传后**必须**再推站点仓让 CI 把文件拉进产物（否则站点源 404）：")
+        print("  python lib/work/tools/_push_via_api.py --repo sf/site --apply")
+        print("  （等 CI 跑完）python tools/host_f1.py --verify-online")
         return 0
 
     if a.verify_online:
@@ -242,19 +249,20 @@ def main(argv) -> int:
             print("✗ 还没有托管清单，先跑 --apply")
             return 2
         hd = json.loads(HOSTED.read_text(encoding="utf-8"))
-        print("核对线上直链（%s → %s）…" % (RELEASE_REPO, RELEASE_TAG))
+        print("核对线上直链（站点源 %s%s/ ← 字节源 Release %s）…" % (
+            SITE_BASE, SITE_FILES, RELEASE_TAG))
         bad = []
         for i, (uid, v) in enumerate(hd["files"].items(), 1):
             st, n = http_probe(v["url"])
             okk = st in (200, 206) and n == v["bytes"]
             if not okk:
-                bad.append((v["file"], st, n, v["bytes"]))
+                bad.append((v["file"], st, n, v["bytes"], v["url"]))
             print("  [%2d/%2d] %s %-46s HTTP %-4s %s" % (
                 i, len(hd["files"]), "✓" if okk else "✗", v["file"], st,
                 ("%s B" % n) if n is not None else "—"))
         print("\n线上核对 %d 个 · 不一致 %d" % (len(hd["files"]), len(bad)))
-        for f, st, n, exp in bad[:10]:
-            print("    ✗ %s  线上 %s/%s · 期望 %s" % (f, st, n, exp))
+        for f, st, n, exp, u in bad[:10]:
+            print("    ✗ %s  线上 %s/%s · 期望 %s\n      %s" % (f, st, n, exp, u))
         return 2 if bad else 0
 
     if a.verify:
@@ -281,7 +289,16 @@ def main(argv) -> int:
     tmp = SF / "work" / "_extract"
     hd = json.loads(HOSTED.read_text(encoding="utf-8")) if HOSTED.exists() else {
         "release_repo": RELEASE_REPO, "release_tag": RELEASE_TAG,
-        "base": RELEASE_BASE, "files": {}}
+        "base": RELEASE_BASE, "site_base": SITE_BASE, "files": {}}
+    hd.setdefault("site_base", SITE_BASE)
+    hd.setdefault("files_dir", SITE_FILES)
+    # 迁移：早期版本把 `url` 写成 Release 地址（无 CORS）→ 改成站点地址，Release 存进 `release`
+    for v in hd["files"].values():
+        if v.get("url", "").startswith(RELEASE_BASE) and not v.get("release"):
+            v["release"] = v["url"]
+            v["url"] = SITE_BASE + SITE_FILES + "/" + v["file"]
+        v.setdefault("path", SITE_FILES + "/" + v["file"])
+        v.setdefault("release", RELEASE_BASE + v["file"])
     print("取回 %d 个 F1 音色（合计 %.1f MB）…\n" % (
         len(picked), sum(c["size_mb"] for c in picked)))
     for i, c in enumerate(picked, 1):
@@ -307,7 +324,9 @@ def main(argv) -> int:
         shutil.copy2(sf2, dst)
         hd["files"][c["id"]] = {
             "file": name, "bytes": dst.stat().st_size, "sha256": h,
-            "url": RELEASE_BASE + name,
+            "path": SITE_FILES + "/" + name,
+            "url": SITE_BASE + SITE_FILES + "/" + name,       # 对外地址（含 CORS）
+            "release": RELEASE_BASE + name,                   # 字节源（CI 从这儿拉）
             "name": c["name"], "author": c["author"], "license": c["license"],
             "src": c["dl_url"], "src_bytes": arc.stat().st_size,
             "cat": c["cat"],
