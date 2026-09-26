@@ -101,7 +101,10 @@ async function loadText(rel){
      写死一次，以后每次台账增长都会误报（本轮就因此红了 3 项）。 */
   const DOC = JSON.parse(data);
   const nRed = DOC.totals.redist, nHosted = DOC.totals.hosted;
-  ok('概览文案含可分发总数', new RegExp(String(nRed)).test($('#lede').textContent),
+  /* ⚠️ 页面上千分位带逗号（1,011），断言必须先去掉分隔符再比 ——
+     否则数据一旦过千就误报（踩过）。 */
+  const num = t => String(t).replace(/[,\s]/g, '');
+  ok('概览文案含可分发总数', num($('#lede').textContent).includes(String(nRed)),
      '可分发 ' + nRed);
   ok('第一栏（可直接下载）有内容', $$('#f1 .srow').length > 0, $$('#f1 .srow').length + ' 行');
   ok('许可分级四档都渲染', $$('#tiers .tierbox').length === 4);
@@ -221,7 +224,8 @@ async function loadText(rel){
   ok('切回中文正常', d.documentElement.lang === 'zh' && /实测记录/.test($('#lede').textContent));
 
   /* ⑥ 外壳与页脚 */
-  ok('页脚法务行已填实时数字', new RegExp(String(nRed)).test($('#footLegal').textContent));
+  ok('页脚法务行已填实时数字', num($('#footLegal').textContent).includes(String(nRed)),
+     num($('#footLegal').textContent).slice(0, 60));
   ok('页脚备注已填', $('#footNote').textContent.trim().length > 0);
   /* 2026-09-26：sf **进全站导航** —— 数据四站的导航自此完全一致（lib/mid/zip/sf），
      sf 自己是第 4 项，且不再有站点特例覆盖。 */
