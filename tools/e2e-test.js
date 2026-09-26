@@ -191,7 +191,10 @@ async function loadText(rel){
   chip.dispatchEvent(new w.Event('click'));
   await wait(60);
   const t1 = $$('#catalog .srow').length;
-  ok('档位 chip 能筛选', t1 > 0 && t1 < before, before + ' → ' + t1);
+  /* ⚠️ 别写成 `t1 < before` —— 首页每个分类段有 **CAP=40 的渲染上限**，
+     所以「初始可见数」本来就小于全量；筛 F1（现在 741 条）反而可能**大于**初始 492（踩过）。
+     判据应是「变了 且 >0」，再由下一条「只剩 F1 徽标」兜住正确性。 */
+  ok('档位 chip 能筛选（数量变化且非空）', t1 > 0 && t1 !== before, before + ' → ' + t1);
   ok('只剩 F1 徽标', $$('#catalog .tierbadge').every(b => b.textContent.trim() === 'F1'));
   chip.dispatchEvent(new w.Event('click'));
   await wait(60);
@@ -311,11 +314,11 @@ async function loadText(rel){
       if (!z) return false;
       const a = Array.from(z.querySelectorAll('a')).map(x => x.getAttribute('href'));
       // 专区入口 = 三个许可/主题专区页（F1 自由分发 / F2 署名 / 民族），顺序固定
+      // ⚠️ 文案里的数字带千分位（1,691）→ 先去掉分隔符再比
+      const zt = num(z.textContent);
       return a.join() === 'f1/,f2/,ethnic/'
-        && new RegExp(String(nF1)).test(z.textContent)
-        && new RegExp(String(nHosted)).test(z.textContent)
-        && new RegExp(String(nF2)).test(z.textContent)
-        && new RegExp(String(nEth)).test(z.textContent);
+        && zt.includes(String(nF1)) && zt.includes(String(nHosted))
+        && zt.includes(String(nF2)) && zt.includes(String(nEth));
     })(), $('#zones') ? $('#zones').textContent.slice(0, 80) : '无');
   }
 
