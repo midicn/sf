@@ -319,6 +319,38 @@ async function loadText(rel){
     })(), $('#zones') ? $('#zones').textContent.slice(0, 80) : '无');
   }
 
+  /* ⑦.5 法务面（用户要求：法律 / 版权 / 免责角度全站审一遍）
+     ⚠️ 这里不只查"页面在不在"，还**机器校验页面上那句法律主张**：
+        「只托管零义务许可（CC0 / 公有领域 / WTFPL / Unlicense）」——
+        如果哪天有人把 F2/F3 的文件也放进托管清单，这条断言必须红。 */
+  console.log('\n【法务】权利与免责');
+  {
+    const legal = await loadText('legal/index.html');
+    ok('权利与免责页可取到', legal.length > 5000, (legal.length / 1024).toFixed(0) + ' KB');
+    for (const [name, kw] of [
+      ['托管政策', '只托管'], ['分档依据', 'F4'], ['存疑政策', '来源存疑'],
+      ['更正与删除', 'issues'], ['免责', '按「现状」'], ['不构成法律意见', '法律意见'],
+      ['本站自身许可', 'CC BY 4.0'],
+    ]) ok('法务页含「' + name + '」', legal.includes(kw));
+    ok('法务页 canonical 指向 /legal/',
+       legal.includes('rel="canonical" href="https://sf.midicn.com/legal/"'));
+
+    /* ★ 法律主张的机器校验：托管清单里**每一个**文件的许可都必须是零义务档 */
+    const host = JSON.parse(await loadText('data/hosted.json')).files;
+    const ZERO = ['CC0', '公有领域', 'WTFPL', 'Unlicense', 'PD'];
+    const bad = Object.entries(host)
+      .filter(([, v]) => !ZERO.some(z => String(v.license || '').includes(z)))
+      .map(([k, v]) => k + '(' + v.license + ')');
+    ok('**托管文件全部为零义务许可**（页面上那句主张可核对）', bad.length === 0,
+       bad.length ? bad.slice(0, 3).join(', ') : Object.keys(host).length + ' 个文件');
+
+    /* 首页/各页页脚都要有通往法务页的入口（否则等于没写） */
+    const idx2 = await loadText('index.html');
+    ok('页脚挂了「权利与免责」入口', /href="\/legal\/"/.test(idx2));
+    ok('首页「不收录」小节说明了存疑政策', /来源站<b>自己标注|自己标注「来源存疑」/.test(idx2)
+       || idx2.includes('来源存疑'));
+  }
+
   /* ⑧ 专区页的**页内筛选**（服务端渲染页上的前端补丁）
      ⚠️ 这条判据是被逼出来的：筛选脚本原先放在清单**之前**的 DOM 位置，
         于是 `querySelectorAll('.srow')` 拿到 0 行 → 「筛选出 0 / 0 条」、

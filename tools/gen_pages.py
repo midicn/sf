@@ -16,6 +16,7 @@
 
 产出
 ----
+    legal/index.html    权利与免责（本站的法务声明）
     f2/index.html       F2 专区（CC BY / MIT / BSD / ISC）
     ethnic/index.html   民族 / 世界音色专项
 
@@ -410,6 +411,163 @@ def page_f1(led: dict, hosted: dict) -> str:
 
 
 # ══════════════════════════════════════════════════════════════════════
+def page_legal(led: dict, hosted: dict) -> str:
+    """`/legal/` · 权利与免责 —— **本站自己的法务声明**。
+
+    为什么必须有这一页（而不是只链 lib 的「许可与法律」）：
+      · lib 那一页讲的是**数据集**（MIDI 曲目 + 内嵌歌词）的权利结构；
+        本站是**另一个权利面**：目录里 1,975 条是他人的音色库，其中 56 个**由本站实际复制托管**；
+      · 本站把来源站标注「来源存疑」的条目**只做统计、不逐条列出** —— 这是一条**主动的政策选择**，
+        必须写明理由；否则它就是"没做"，而不是"决定不做"；
+      · 还缺**更正/删除渠道**与**无担保**两项（全站此前都没有）。
+    """
+    n_all = led["total"]
+    n_host = len(hosted)
+    n_gray = sum(1 for x in led.get("excluded", []) if x.get("license_code") == "gray")
+    return head(
+        "权利与免责 · midicn-lib soundfonts",
+        "本站的性质、托管政策与分档依据、更正与删除渠道、免责声明。"
+        "收录 %d 条音色库，其中 %d 个由本站托管（全部为零义务许可）。" % (n_all, n_host),
+    ) + f"""
+<main class="doc wide">
+  <p class="meta" {bi("档案 · 权利与义务", "ARCHIVE · RIGHTS")}>档案 · 权利与义务</p>
+  <h1 {bi("权利与免责", "Rights & disclaimer")}>权利与免责</h1>
+  <p class="lede" {bi(
+    "本站收录 <b>%d</b> 条音色库的记录，其中 <b>%d</b> 个由本站<b>实际复制托管</b>。"
+    "下面写清我们做了什么、没做什么、凭什么，以及你认为自己做错了时怎么找我们。"
+    % (n_all, n_host),
+    "This site records <b>%d</b> sound banks and <b>hosts %d files itself</b>. "
+    "Below: what we do, what we refuse to do, on what basis, and how to reach us."
+    % (n_all, n_host))}></p>
+
+  <div class="stitle"><h2 {bi("一 · 本站是什么", "1 · What this site is")}>一 · 本站是什么</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "本站是一个<b>索引站 + 有限分发站</b>：把公开可得的声音库整理成可检索的目录，逐条标注"
+      "许可、来源、体积与格式，并把其中<b>许可义务最少</b>的一批托管在本站。",
+      "An <b>index plus a limited distribution point</b>: we catalogue publicly available sound banks "
+      "with per-entry licence, source, size and format, and self-host the ones with the "
+      "<b>fewest licence obligations</b>.")}>索引 + 有限分发。</p>
+    <p {bi(
+      "<b>本站不是这些音色的权利人</b>，与各来源方之间也没有代理、授权或合作关系（"
+      "除公开许可本身所授予的以外）。目录里的名称与作者署名是<b>为方便你找到原作者</b>而保留的。",
+      "<b>We are not the rights holder</b> of these banks, and we have no agency, licence or partnership "
+      "with the sources beyond what the public licences themselves grant. Names and credits are kept "
+      "<b>to help you find the original author</b>.")}>不是权利人。</p>
+  </div></div>
+
+  <div class="stitle"><h2 {bi("二 · 托管政策：我们复制了哪些文件",
+                             "2 · What we host, and why")}>二 · 托管政策：我们复制了哪些文件</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "只托管<b>零义务许可</b>的音色：CC0 / 公有领域 / WTFPL / Unlicense —— "
+      "可商用、可改作、按原样再分发<b>都不需要署名</b>。另有两条硬线：体积 ≤ 50 MB、"
+      "格式必须是浏览器能直接播放的 <code>.sf2</code>。当前托管 <b>%d</b> 个。" % n_host,
+      "We host <b>only zero-obligation licences</b>: CC0 / public domain / WTFPL / Unlicense — "
+      "commercial use, remixing and redistribution all need <b>no credit</b>. Two hard limits too: "
+      "≤ 50 MB and browser-playable <code>.sf2</code>. Currently <b>%d</b> files." % n_host)}>只托管零义务档。</p>
+    <p {bi(
+      "每个托管文件都留下<b>可复算的证据</b>：来源地址、来源方标注的许可、字节数、"
+      "<code>sha256</code>（见 <a href=\"/data/hosted.json\">/data/hosted.json</a>）。",
+      "Every hosted file carries <b>reproducible evidence</b>: source URL, the licence as stated by the "
+      "source, byte size and <code>sha256</code> (see <a href=\"/data/hosted.json\">/data/hosted.json</a>).")}>证据链可复算。</p>
+    <p {bi(
+      "<b>许可标注来自来源方</b>（如 FreePats 的乐器页、musical-artifacts 的 license 字段）。"
+      "我们逐条记录其<b>原始表述</b>（台账字段 <code>license_raw</code>），但"
+      "<b>不保证来源方的标注绝对准确</b>。若你发现某条标注有误，请按第五节告知 —— "
+      "我们会核查、更正，必要时<b>撤下文件</b>。",
+      "<b>Licence labels come from the sources</b> (FreePats instrument pages, musical-artifacts' "
+      "<code>license</code> field). We record their <b>wording verbatim</b> (<code>license_raw</code>) "
+      "but <b>do not warrant that the source is correct</b>. If a label is wrong, tell us (§5): "
+      "we will verify, correct, and if needed <b>take the file down</b>.")}>标注来源，不背书。</p>
+  </div></div>
+
+  <div class="stitle"><h2 {bi("三 · 我们不做什么", "3 · What we refuse to do")}>三 · 我们不做什么</h2></div>
+  <div class="tblwrap"><table><thead><tr>
+    <th {bi("档位", "Tier")}>档位</th><th {bi("我们怎么做", "What we do")}>我们怎么做</th>
+    <th {bi("依据", "Why")}>依据</th></tr></thead><tbody>
+    <tr><td>F1 零义务</td><td>{bi("收录 + 站内托管 + 直接下载", "listed, self-hosted, direct download")}收录 + 托管 + 直下</td>
+        <td>{bi("可商用、可改作、再分发无需署名", "commercial use, remixing, redistribution — no credit needed")}零义务</td></tr>
+    <tr><td>F2 需署名</td><td>{bi("收录 + <b>给出上游许可原文</b>（便于你正确署名），<b>不复刻文件</b>",
+                            "listed with the <b>upstream licence wording</b> so you can credit correctly; "
+                            "<b>file not mirrored</b>")}收录 + 给许可原文，不复刻</td>
+        <td>{bi("署名义务由使用者履行；我们代管会引入额外义务", "duty sits with the user; mirroring would add duties on us")}署名义务归使用者</td></tr>
+    <tr><td>F3 传染性</td><td>{bi("只给来源指引，<b>不给直链</b>", "pointer only, <b>no direct link</b>")}只给指引</td>
+        <td>{bi("CC BY-SA / GPL 会传染到下游作品", "copyleft propagates downstream")}传染性</td></tr>
+    <tr><td>F4 不可分发</td><td>{bi("只做记录并<b>逐条写明原因</b>", "recorded with a <b>per-item reason</b>")}只记录 + 原因</td>
+        <td>{bi("禁商用 / 禁改作 / Sampling / 商业授权 / 版权受限 / 未标注", "NC / ND / Sampling / commercial / restricted / unstated")}许可不允许</td></tr>
+    </tbody></table></div>
+
+  <div class="stitle"><h2 {bi("四 · 关于「来源存疑」那 %d 条", "4 · The %d “source unclear” entries" % n_gray)
+                          % n_gray}>四 · 关于「来源存疑」那 {n_gray} 条</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "有 <b>%d</b> 条是<b>来源站自己</b>标注「来源存疑」的（多为从商业游戏 ROM 提取的音色）。"
+      "我们的处理是：<b>只给出总数与原因，不在本站逐条列出、也不给任何链接。</b>" % n_gray,
+      "<b>%d</b> entries carry the <b>source site's own</b> “source unclear” flag (mostly tones "
+      "extracted from commercial game ROMs). Our handling: <b>a count and a reason only — no per-item "
+      "listing and no links on this site.</b>" % n_gray)}>只给总数，不逐条列出。</p>
+    <p {bi(
+      "<b>理由</b>：逐条列出并附来源链接，等于把访客<b>定向带到</b>疑似侵权的素材上 —— "
+      "那就不再是「描述他人目录」，而成了「协助获取」。这条是<b>我们的选择</b>，不是遗漏："
+      "每一批我们都逐条看过，完整清单连同原因保留在公开台账中<b>供审计</b>。",
+      "<b>Why</b>: listing them with links would <b>route visitors straight to</b> material that is "
+      "likely infringing — that stops being “describing someone else's catalogue” and becomes "
+      "“helping people get it”. This is <b>a decision, not an omission</b>: we reviewed each entry, and "
+      "the complete list with reasons stays in the public ledger <b>for audit</b>.")}>选择不做，而非没做。</p>
+  </div></div>
+
+  <div class="stitle"><h2 {bi("五 · 更正与删除", "5 · Correction & takedown")}>五 · 更正与删除</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "如果你认为本站的某条记录或某个托管文件侵犯了你的权利，或信息有误，请到公开仓库提一个 issue："
+      "<a href=\"https://github.com/midicn/music-soundfonts/issues\" target=\"_blank\" rel=\"noopener\">"
+      "github.com/midicn/music-soundfonts/issues</a>，并附上<b>条目名称或链接</b>与<b>你的权利依据</b>。",
+      "If a record or a hosted file infringes your rights, or is wrong, open an issue at "
+      "<a href=\"https://github.com/midicn/music-soundfonts/issues\" target=\"_blank\" rel=\"noopener\">"
+      "github.com/midicn/music-soundfonts/issues</a> with <b>the entry name or link</b> and "
+      "<b>your basis of claim</b>.")}>渠道：仓库 issue。</p>
+    <p {bi(
+      "我们的处理顺序是：<b>核实 → 更正（多数情况）→ 确有必要时立即撤下文件</b>。"
+      "我们不会为了「证明自己对」而保留文件，也不会为来源方的标注背书。",
+      "Our order of operations: <b>verify → correct (most cases) → remove the file immediately if "
+      "warranted</b>. We will not keep a file just to defend our own label, and we do not vouch for "
+      "the sources' labels.")}>先更正，必要时立即撤下。</p>
+  </div></div>
+
+  <div class="stitle"><h2 {bi("六 · 免责", "6 · Disclaimer")}>六 · 免责</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "本站与台账<b>按「现状」提供</b>，不对其完整性、准确性或可用性作任何担保；"
+      "许可信息来自来源方标注，<b>可能出错或已变更</b> —— <b>使用前请自行核对原始许可</b>。",
+      "This site and its ledger are provided <b>“as is”</b>, with no warranty of completeness, accuracy "
+      "or fitness; licence labels come from the sources and <b>may be wrong or outdated</b> — "
+      "<b>verify the original licence before you use anything</b>.")}>按现状提供，无担保。</p>
+    <p {bi(
+      "本站<b>不提供法律意见</b>；涉及具体用途（尤其商用）请咨询专业人士。"
+      "因使用本站内容而产生的后果，由使用者自行承担。",
+      "Nothing here is <b>legal advice</b>; for a specific use — commercial use especially — consult a "
+      "professional. You bear the consequences of how you use this material.")}>不构成法律意见。</p>
+    <p {bi(
+      "本站对侵权内容实行<b>通知—删除</b>（见第五节）。",
+      "We operate a <b>notice-and-takedown</b> practice for infringing content (see §5).")}>通知—删除。</p>
+  </div></div>
+
+  <div class="stitle"><h2 {bi("七 · 本站自身的许可", "7 · This site's own licence")}>七 · 本站自身的许可</h2></div>
+  <div class="panel"><div class="panel-bd">
+    <p {bi(
+      "站点<b>代码</b>：MIT ｜ 我们整理的<b>台账数据</b>：CC BY 4.0 ｜ "
+      "<b>收录的音色文件本身</b>：权利属原作者，按各自来源许可（见条目）。"
+      "本站对第三方音色<b>不主张著作权</b>。",
+      "<b>Site code</b>: MIT ｜ <b>our ledger data</b>: CC BY 4.0 ｜ "
+      "<b>the sound banks themselves</b>: rights belong to their authors, under each source's licence. "
+      "We claim <b>no copyright</b> in third-party banks.")}>代码 MIT · 台账 CC BY 4.0 · 素材依来源。</p>
+  </div></div>
+</main>
+""" + FOOT
+
+
+# ══════════════════════════════════════════════════════════════════════
 def page_ethnic(led: dict, hosted: dict) -> str:
     ents = [e for e in led["entries"] if e["cat"] == "ethnic" and e["redistributable"]]
     ents.sort(key=lambda e: (e.get("size_mb") or 9e9, e["name"].lower()))
@@ -510,7 +668,9 @@ def main(argv) -> int:
 
     pages = {"f1/index.html": page_f1(led, hosted),
              "f2/index.html": page_f2(led, hosted),
-             "ethnic/index.html": page_ethnic(led, hosted)}
+             "ethnic/index.html": page_ethnic(led, hosted),
+             # 权利与免责：本站自己的法务声明（全站此前只有 lib 那页"数据集向"的许可页）
+             "legal/index.html": page_legal(led, hosted)}
     rc = 0
     for rel, text in pages.items():
         p = SITE / rel
