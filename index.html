@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh" data-site="sf">
+<html lang="zh" data-site="sf" data-design="v6">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>音色库（SoundFont）目录 · 许可分级 · 来源可核</title>
 <meta name="description" content="midicn 音色库目录：1,277 条 SoundFont 实测记录，逐条标注许可、来源、格式与体积。只托管可自由分发的（CC0 / 公有领域 / WTFPL），署名型另设专区，有传染性与不可分发的只给来源。下载后可载入音乐库播放器试听。">
-<link rel="stylesheet" href="assets/core/midicn.bdf51406ff.css">
+<link rel="stylesheet" href="assets/core/midicn.67b49e760b.css">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/site.css">
 <!-- SEO:BEGIN -->
@@ -30,6 +30,11 @@
 <link rel="apple-touch-icon" href="assets/og-icon.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://sf.midicn.com/#website","url":"https://sf.midicn.com/","name":"midicn-lib soundfonts","alternateName":"midicn-lib","inLanguage":"zh-CN","publisher":{"@id":"https://lib.midicn.com/#org"}},{"@type":"Organization","@id":"https://lib.midicn.com/#org","name":"midicn-lib","url":"https://lib.midicn.com/","sameAs":["https://github.com/midicn/midi-library"]},{"@type":"DataCatalog","name":"midicn 音色库目录（SoundFont）","description":"midicn 音色库目录：1,277 条 SoundFont 实测记录，逐条标注许可、来源、格式与体积。只托管可自由分发的（CC0 / 公有领域 / WTFPL），署名型另设专区，有传染性与不可分发的只给来源。下载后可载入音乐库播放器试听。","url":"https://sf.midicn.com/","creator":{"@id":"https://lib.midicn.com/#org"},"isAccessibleForFree":true,"license":"https://lib.midicn.com/licenses.html","keywords":["SoundFont","sf2","CC0","public domain","MIDI","sound bank"]}]}</script>
 <!-- SEO:END -->
+<link rel="stylesheet" href="assets/core/v6-data.32a62fe518.css">
+<!--v6-font-->
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/p.4bbf090220.woff2" crossorigin>
+<style>@font-face{font-family:"Smiley Sans";src:url("assets/fonts/p.4bbf090220.woff2") format("woff2");font-display:swap}</style>
+<!--/v6-font-->
 </head>
 <body>
 
@@ -200,8 +205,9 @@ $('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh'; store.set('midicn-
 
 const themeBtn = $('theme');
 function setTheme(v){ document.documentElement.dataset.theme = v; store.set('midicn-theme', v); }
-setTheme(store.get('midicn-theme', null) || 'dark');
-themeBtn.onclick = ()=> setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+var savedTheme = store.get('midicn-theme', null);
+if (savedTheme === 'light' || savedTheme === 'dark') setTheme(savedTheme);
+themeBtn.onclick = ()=> setTheme((document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark');
 
 function licBadge(e){
   const cls = e.t === 'F1' ? 'c1' : e.t === 'F2' ? 'c2' : e.t === 'F3' ? 'c3' : 'c4';
@@ -482,6 +488,6 @@ async function boot(){
 applyLang();
 boot();
 </script>
-<script src="assets/core/shell.67a944dda2.js"></script>
+<script src="assets/core/shell.83698018a9.js"></script>
 </body>
 </html>

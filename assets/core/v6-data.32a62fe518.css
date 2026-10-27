@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   midicn · v6 数据站层（A+C 壳 × B 音乐积木）
+   数据四站（lib/mid/zip/sf）的站内 CSS 在核心之后加载；本文件必须再挂在
+   站内 CSS 之后，才能用同一套 v6 token 覆盖共享的数据组件类。
+   只在 `html[data-design="v6"]` 生效。
+   ═══════════════════════════════════════════════════════════════════════ */
+
+html[data-design=v6]{
+  --ink:light-dark(#FFF5E4,#1B1317);
+  --ink-2:light-dark(#FFFCF4,#261A1F);
+  --ink-3:light-dark(#FFE9C9,#33222A);
+  --ink-4:light-dark(#FFF9EE,#2B1D23);
+  --paper:light-dark(#241B17,#FFF3E6);
+  --paper-2:light-dark(#5C4B3F,#C6B3A6);
+  --paper-3:light-dark(#6F5B4A,#A9958A);
+  --rule:light-dark(#D8C7AE,#4A383F);
+  --rule-2:light-dark(#C3AE90,#5C454D);
+  --v6-line:light-dark(#241B17,#FFF3E6);
+  --v6-accent:var(--jf-1,var(--accent,var(--vermilion)));
+  --v6-accent-2:var(--jf-3,var(--gold));
+  --v6-display:"Smiley Sans","Songti SC",serif;
+  --v6-shadow:4px 4px 0 light-dark(rgba(36,27,23,.9),rgba(0,0,0,.65));
+  --v6-shadow-sm:3px 3px 0 light-dark(rgba(36,27,23,.9),rgba(0,0,0,.65));
+  color-scheme:light dark;
+}
+html[data-design=v6] body{
+  background-color:var(--ink);
+  background-image:
+    radial-gradient(color-mix(in srgb,var(--v6-line) 7%,transparent) 1px,transparent 1.2px),
+    radial-gradient(44% 32% at 90% 2%,color-mix(in srgb,var(--v6-accent) 8%,transparent),transparent 70%);
+  background-size:24px 24px,auto;
+}
+html[data-design=v6] body > header{border-bottom:2px solid var(--v6-line);background:color-mix(in srgb,var(--ink) 92%,transparent)}
+html[data-design=v6] .brand b{font-family:var(--v6-display);font-size:22px}
+html[data-design=v6] .kb-switch a{border-radius:999px;padding:.32em .55em;opacity:.72}
+html[data-design=v6] .kb-switch a[aria-current=page]{opacity:1;box-shadow:inset 0 -3px 0 var(--v6-accent)}
+html[data-design=v6] .kb-lang{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--v6-line);border-radius:999px;padding:5px 10px;font-weight:700;line-height:1.2}
+
+/* ── B 的积木：数据组件统一墨线 + 硬投影 ───────────────────────── */
+html[data-design=v6] .panel,
+html[data-design=v6] .tile,
+html[data-design=v6] .pkg,
+html[data-design=v6] .fgrid a,
+html[data-design=v6] .card,
+html[data-design=v6] .srow,
+html[data-design=v6] .prow{
+  border:2px solid var(--v6-line);border-radius:10px;background:var(--ink-2);
+  box-shadow:var(--v6-shadow-sm);
+}
+html[data-design=v6] .panel-hd,
+html[data-design=v6] .stitle{border-bottom:2px solid var(--v6-line)}
+html[data-design=v6] .stitle h2{
+  font-family:var(--v6-display);font-size:clamp(20px,2.4vw,26px);
+  letter-spacing:-.01em;font-weight:400;
+}
+html[data-design=v6] .stitle .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em}
+html[data-design=v6] h1{font-family:var(--v6-display);font-weight:400;letter-spacing:-.02em}
+html[data-design=v6] .hero .lede{font-size:15px}
+html[data-design=v6] .tag,
+html[data-design=v6] .chip,
+html[data-design=v6] .tierchip,
+html[data-design=v6] .dlchip,
+html[data-design=v6] .val{
+  border:2px solid var(--v6-line);border-radius:6px;background:var(--ink-2);
+  box-shadow:2px 2px 0 light-dark(rgba(36,27,23,.9),rgba(0,0,0,.65));
+}
+/* 选中态不铺满 accent：实心底上灰字/小字都掉对比度。
+   奶油底 + accent 描边 + accent 硬投影，文字继续留在纸上。 */
+html[data-design=v6] .val.on,
+html[data-design=v6] .chip.on,
+html[data-design=v6] .is-on{
+  background:var(--ink-2);color:var(--paper);border-color:var(--v6-accent);
+  box-shadow:3px 3px 0 color-mix(in srgb,var(--v6-accent) 55%,var(--v6-line));
+}
+html[data-design=v6] .btn,
+html[data-design=v6] .dlbtn,
+html[data-design=v6] .morebtn{
+  border:2px solid var(--v6-line);border-radius:8px;box-shadow:var(--v6-shadow-sm);
+  background:var(--ink-2);color:var(--paper);
+}
+html[data-design=v6] .btn.primary,
+html[data-design=v6] .dlbtn.primary{background:var(--v6-accent);color:#1B1317}
+html[data-design=v6] .btn:hover,
+html[data-design=v6] .dlbtn:hover,
+html[data-design=v6] .morebtn:hover{transform:translateY(-2px);color:var(--paper)}
+
+/* ── 表格：B 的积木式行 ─────────────────────────────────────────── */
+html[data-design=v6] .tblwrap{
+  border:2px solid var(--v6-line);border-radius:10px;background:var(--ink-2);
+  box-shadow:var(--v6-shadow);overflow:hidden;
+}
+html[data-design=v6] .tblwrap thead th{background:var(--ink-3);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+html[data-design=v6] .tblwrap td,
+html[data-design=v6] .tblwrap th{border-bottom:1px dashed var(--rule)}
+html[data-design=v6] .tblwrap tbody tr:hover{background:var(--ink-3)}
+html[data-design=v6] .tblwrap tbody tr:last-child td{border-bottom:0}
+
+/* ── lib 播放条：纸面 + accent 阴影 ────────────────────────────── */
+html[data-design=v6] #player{
+  border-top:2px solid var(--v6-line);background:var(--ink-2);
+  box-shadow:0 -14px 34px -26px color-mix(in srgb,var(--v6-accent) 55%,transparent);
+}
+html[data-design=v6] .prog-seek,
+html[data-design=v6] #prog::-webkit-slider-thumb{background:var(--v6-accent)}
+
+/* ── 底栏 ─────────────────────────────────────────────────────── */
+html[data-design=v6] .kb-tabs{background:var(--ink-2);border-top:2px solid var(--v6-line)}
+html[data-design=v6] .kb-tabs > a[aria-current=page]{color:var(--paper);font-weight:700;box-shadow:inset 0 3px 0 var(--v6-accent)}
+html[data-design=v6] .kb-tabs-sheet{background:var(--ink-2);border:2px solid var(--v6-line);border-radius:16px}
+
+@media (max-width:640px){
+  html[data-design=v6] .hbar > .brand{min-height:44px}
+  html[data-design=v6] .hbar .iconbtn,
+  html[data-design=v6] .hbar .kb-lang{min-width:44px;min-height:44px}
+  html[data-design=v6] .panel,
+  html[data-design=v6] .tile,
+  html[data-design=v6] .pkg,
+  html[data-design=v6] .srow,
+  html[data-design=v6] .prow{box-shadow:3px 3px 0 light-dark(rgba(36,27,23,.9),rgba(0,0,0,.65))}
+}

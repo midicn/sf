@@ -1,0 +1,11 @@
+# GitHub Pages 支持的缓存头文件（Pages 无 .htaccess，这是唯一的缓存控制手段）
+# ⚠️ sw.js 必须不缓存：浏览器靠逐字节比对新旧 SW 来判断是否有更新，
+#    缓存它 = 用户永远拿不到新版本。
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=86400, must-revalidate
