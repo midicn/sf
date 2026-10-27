@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 声波水母 · tier1（≤20px）：伞盖 + 三粗缕，不装眼也不装字母。
+       16px 是 favicon 的真实尺寸，眼睛这个量级的细节在那里只会变成脏点。
+       颜色随系统明暗翻转：深色标签栏给浅色图标，浅色标签栏给深色图标。 -->
+  <style>
+    .d{fill:#F4F1EA}.t{stroke:#F4F1EA}
+    @media (prefers-color-scheme: light){ .d{fill:#141218}.t{stroke:#141218} }
+  </style>
+  <path class="d" d="M2 17A14 14 0 0 1 30 17Z"/>
+  <g class="t" fill="none" stroke-width="3.6" stroke-linecap="round">
+    <path d="M9 17.5v7M16 17.5v8.5M23 17.5v7"/>
+  </g>
+</svg>

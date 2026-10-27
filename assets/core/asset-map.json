@@ -1,0 +1,12 @@
+{
+  "core_version": "0.7.0",
+  "assets": {
+    "assets/core/icons/favicon.svg": "/assets/core/icons/favicon.9e01bb7a2e.svg",
+    "assets/core/icons/icon-192.png": "/assets/core/icons/icon-192.38fcdb520a.png",
+    "assets/core/icons/icon-512.png": "/assets/core/icons/icon-512.5be5e2f189.png",
+    "assets/core/icons/icon-maskable-512.png": "/assets/core/icons/icon-maskable-512.7193f36edd.png",
+    "assets/core/midicn.css": "/assets/core/midicn.bdf51406ff.css",
+    "assets/core/player/player.js": "/assets/core/player/player.19707132f3.js",
+    "assets/core/shell.js": "/assets/core/shell.67a944dda2.js"
+  }
+}
