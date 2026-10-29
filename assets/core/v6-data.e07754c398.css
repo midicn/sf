@@ -105,6 +105,15 @@ html[data-design=v6] #prog::-webkit-slider-thumb{background:var(--v6-accent)}
 
 /* ── 底栏 ─────────────────────────────────────────────────────── */
 html[data-design=v6] .kb-tabs{background:var(--ink-2);border-top:2px solid var(--v6-line)}
+/* MIDI 库页内子标签：音乐库 / 维度浏览 / 包下载（顶部 9 项后仍可达） */
+html[data-design=v6] .kb-subtabs{display:flex;gap:6px;flex-wrap:wrap;max-width:var(--wrap);margin:0 auto;padding:10px 0 0}
+html[data-design=v6] .kb-subtabs a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;
+  border:2px solid var(--v6-line);border-radius:8px;background:var(--ink-2);color:var(--paper);
+  font-size:12px;font-weight:700;text-decoration:none;box-shadow:var(--v6-shadow-sm)}
+html[data-design=v6] .kb-subtabs a[aria-current=page]{background:var(--ink-3);border-color:var(--v6-accent);
+  box-shadow:3px 3px 0 color-mix(in srgb,var(--v6-accent) 55%,var(--v6-line))}
+@media (max-width:640px){html[data-design=v6] .kb-subtabs{padding:8px 12px 0}}
+
 html[data-design=v6] .kb-tabs > a[aria-current=page]{color:var(--paper);font-weight:700;box-shadow:inset 0 3px 0 var(--v6-accent)}
 html[data-design=v6] .kb-tabs-sheet{background:var(--ink-2);border:2px solid var(--v6-line);border-radius:16px}
 

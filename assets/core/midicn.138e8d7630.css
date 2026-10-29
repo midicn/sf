@@ -234,12 +234,16 @@ p,.lede{text-wrap:pretty}
 .wrap-read{max-width:var(--wrap-read)}
 
 /* ── 顶栏 ───────────────────────────────────────────────────────────── */
-header{position:sticky;top:0;z-index:var(--z-hdr);background:var(--ink);
+/* 只认站点头：条目正文里的语义 <header class="kb-head"> 不是导航，
+   全局 header 选择器会把标题块变成 sticky 色带（v6 点阵背景一上就现形）。 */
+body > header{position:sticky;top:0;z-index:var(--z-hdr);background:var(--ink);
   border-bottom:1px solid var(--rule)}
 .hbar{max-width:var(--wrap);margin:0 auto;height:var(--hdr);
   padding:0 var(--gutter);display:flex;align-items:center;gap:var(--s5)}
 .brand{display:flex;align-items:center;gap:var(--s2);border:0;flex:none}
 .brand svg{width:22px;height:22px;flex:none}
+/* 404 页的品牌水母按构建期 32px 出图；别让 22px 的常态规则把它压回去 */
+.brand .jf-404 svg{width:32px;height:32px}
 .brand b{font-family:var(--serif);font-size:var(--fs-16);font-weight:600}
 .brand i{font-family:var(--mono);font-size:var(--fs-11);font-style:normal;color:var(--paper-3);margin-left:2px}
 .nav{display:flex;gap:var(--s5);font-size:var(--fs-13);margin-left:auto;flex-wrap:wrap}
@@ -251,6 +255,20 @@ header{position:sticky;top:0;z-index:var(--z-hdr);background:var(--ink);
 .iconbtn:hover{border-color:var(--vermilion);color:var(--vermilion)}
 .iconbtn svg{width:15px;height:15px;fill:currentColor}
 .langbtn{width:auto;padding:0 var(--s3);font-family:var(--mono);font-size:var(--fs-11)}
+/* 明暗切换：图标 = 当前主题的反向动作（亮底显示月亮，暗底显示太阳） */
+#theme svg{fill:none;stroke:currentColor}
+#theme .i-sun{display:none}
+#theme .i-moon{display:block}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]) #theme .i-sun{display:block}
+  :root:not([data-theme=light]) #theme .i-moon{display:none}
+}
+:root[data-theme=dark] #theme .i-sun{display:block}
+:root[data-theme=dark] #theme .i-moon{display:none}
+:root[data-theme=light] #theme .i-sun{display:none}
+:root[data-theme=light] #theme .i-moon{display:block}
+/* 底栏 SVG 精灵：只做定义，不占布局 */
+.kb-tabicons{position:absolute;width:0;height:0;overflow:hidden}
 
 /* ── 面板 / 瓦片 ─────────────────────────────────────────────────────── */
 .panel{border:1px solid var(--rule);background:var(--ink-2)}
@@ -351,6 +369,10 @@ main.doc li{margin-bottom:var(--s2)}
 
 @media(max-width:640px){
   .hbar{height:52px;gap:var(--s3)} .nav{gap:var(--s3);font-size:var(--fs-12)}
+  /* 触控最小 44px：品牌回首页与主题/语言控件在手机上都得够得着 */
+  .hbar > .brand{min-height:44px}
+  .hbar .kb-lang,.hbar .iconbtn{min-width:44px;min-height:44px}
+  .hbar .kb-lang{display:inline-flex;align-items:center;justify-content:center}
   h1{font-size:var(--fs-26)}
   .pkgs{grid-template-columns:1fr}
     table{font-size:var(--fs-12)} th,td{padding:var(--s2)}
@@ -565,19 +587,23 @@ footer.foot{ padding:0 }
    ⚠️ 断点暂用既有 640px，不新增一档；等断点收缩那一步统一决定翻转点。 */
 .kb-tabs{ display:none }
 @media (max-width:640px){
+  /* 底栏占用高度 = 6 + 44 + 6 + 安全区。播放条与正文都按它让位，
+     否则 sticky 播放条（z 30）会把底栏（z 20）整条盖住。 */
+  :root{ --tabs-h:calc(56px + var(--sa-b)) }
   .kb-switch{ display:none }
   .kb-tabs{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+    display:grid; grid-template-columns:repeat(8,1fr); gap:1px;
     position:fixed; left:0; right:0; bottom:0; z-index:var(--z-hdr);
-    padding:6px 6px calc(6px + var(--sa-b));
+    padding:6px 2px calc(6px + var(--sa-b));
     background:var(--ink-2); border-top:1px solid var(--rule);
   }
   .kb-tabs > a, .kb-tabs summary{
-    display:grid; place-items:center; gap:2px; min-height:var(--tap);
-    border-radius:var(--r-1); font-size:var(--fs-12); text-decoration:none;
+    display:grid; place-items:center; gap:1px; min-height:var(--tap);
+    border-radius:var(--r-1); font-size:9.5px; line-height:1.1; text-decoration:none;
     color:var(--paper-2); background:none; border:0; cursor:pointer;
-    font-family:inherit; letter-spacing:0;
+    font-family:inherit; letter-spacing:0; padding:3px 0;
   }
+  .kb-tabs > a svg{width:16px;height:16px;display:block;flex:none}
   .kb-tabs > a:hover, .kb-tabs summary:hover{ color:var(--paper) }
   .kb-tabs > a[aria-current="page"]{ color:var(--accent); font-weight:650 }
   .kb-tabs-more{ position:relative }
@@ -596,7 +622,195 @@ footer.foot{ padding:0 }
   }
   .kb-tabs-sheet a:hover{ background:color-mix(in srgb,currentColor 12%,transparent); color:var(--paper) }
   .kb-tabs-sheet a[aria-current="page"]{ color:var(--accent); font-weight:650 }
-  /* 底栏占位：避免固定栏压住页脚最后一行 */
-  main{ padding-bottom:calc(var(--s6) + var(--sa-b)) }
+  /* 避免固定栏压住页脚最后一行 */
+  main{ padding-bottom:calc(var(--s6) + var(--tabs-h)) }
 }
 @media (prefers-reduced-motion:reduce){ .kb-tabs, .kb-tabs-sheet{ transition:none } }
+
+/* ── v6.css ── */
+/* ═══════════════════════════════════════════════════════════════════════
+   midicn · v6 设计层（A 水母乐园 × C 夜光水族馆）
+   2026-10-27：旧宪法「不靠字体/插画/纹理/光晕」的限制按用户指示解除。
+   本层只挂在 `<html data-design="v6">` 的试点站上；别的站继续走 0.7 外观，
+   竖切验收后再推广，避免一次动 11 站。
+
+   不可谈判的四条：两底对比度 ≥AA · 触控 ≥44px · reduced-motion 可关 ·
+   首屏仍按预算。除此之外的旧禁令（字体娱乐化、贴纸、硬投影、纹理、光晕、
+   backdrop-filter、圆角档位）在本层内一律不再适用。
+   ═══════════════════════════════════════════════════════════════════════ */
+
+
+html[data-design=v6]{
+  --ink:light-dark(#FFF5E4,#1B1317);
+  --ink-2:light-dark(#FFFCF4,#261A1F);
+  --ink-3:light-dark(#FFE9C9,#33222A);
+  --ink-4:light-dark(#FFF9EE,#2B1D23);
+  --paper:light-dark(#241B17,#FFF3E6);
+  --paper-2:light-dark(#5C4B3F,#C6B3A6);
+  --paper-3:light-dark(#6F5B4A,#A9958A);
+  --rule:light-dark(#D8C7AE,#4A383F);
+  --rule-2:light-dark(#C3AE90,#5C454D);
+  --v6-line:light-dark(#241B17,#FFF3E6);
+  --v6-accent:var(--jf-1,var(--vermilion));
+  --v6-accent-2:var(--jf-3,var(--gold));
+  --v6-display:"Smiley Sans","Songti SC",serif;
+  --v6-r:20px;
+  --v6-shadow:0 5px 0 light-dark(rgba(36,27,23,.88),rgba(0,0,0,.62));
+  --v6-shadow-sm:0 3px 0 light-dark(rgba(36,27,23,.88),rgba(0,0,0,.62));
+  color-scheme:light dark;
+}
+
+html[data-design=v6] body{
+  background-color:var(--ink);
+  background-image:
+    radial-gradient(color-mix(in srgb,var(--v6-line) 7%,transparent) 1px,transparent 1.2px),
+    radial-gradient(50% 36% at 86% 4%,color-mix(in srgb,var(--v6-accent) 10%,transparent),transparent 70%),
+    radial-gradient(42% 34% at 4% 96%,color-mix(in srgb,var(--v6-accent-2) 9%,transparent),transparent 70%);
+  background-size:24px 24px,auto,auto;
+}
+
+/* ── 顶栏 ─────────────────────────────────────────────────────────── */
+html[data-design=v6] body > header{border-bottom:2px solid var(--v6-line);background:color-mix(in srgb,var(--ink) 92%,transparent)}
+html[data-design=v6] .brand b{font-family:var(--v6-display);font-size:22px;letter-spacing:.01em}
+html[data-design=v6] .brand i{font-size:10.5px}
+html[data-design=v6] .kb-switch a{border-radius:999px;padding:.32em .55em;opacity:.72}
+html[data-design=v6] .kb-switch a:hover{background:color-mix(in srgb,var(--v6-line) 10%,transparent);opacity:1}
+html[data-design=v6] .kb-switch a[aria-current=page]{opacity:1;box-shadow:inset 0 -3px 0 var(--v6-accent)}
+html[data-design=v6] .kb-lang{border:2px solid var(--v6-line);border-radius:999px;padding:5px 10px;font-weight:700;line-height:1.2}
+html[data-design=v6] .kb-lang:hover{border-bottom-color:var(--v6-line);background:var(--ink-3);color:var(--paper)}
+
+/* ── 门户：A 的纸面 + 贴纸，C 的水母光 ───────────────────────────── */
+html[data-design=v6] .doc-index{padding-top:clamp(28px,4vw,56px)}
+html[data-design=v6] .v6-hero{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,4vw,48px);
+  align-items:center;position:relative;margin-bottom:clamp(28px,4vw,52px);
+}
+html[data-design=v6] .v6-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;background:var(--ink-3);color:var(--paper);
+  border:2px solid var(--v6-line);border-radius:999px;padding:4px 10px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+}
+html[data-design=v6] .doc-index h1{
+  font-family:var(--v6-display);font-size:clamp(48px,7vw,82px);line-height:.98;
+  letter-spacing:-.03em;margin:14px 0 14px;font-weight:400;
+}
+html[data-design=v6] .v6-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+html[data-design=v6] .v6-btn{
+  display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:999px;
+  border:2px solid var(--v6-line);background:var(--ink-2);color:var(--paper);
+  font-size:13px;font-weight:700;box-shadow:var(--v6-shadow-sm);
+  transition:transform .14s,box-shadow .14s,background .14s;
+}
+html[data-design=v6] .v6-btn:hover{transform:translateY(-2px);box-shadow:0 5px 0 light-dark(rgba(36,27,23,.88),rgba(0,0,0,.62));color:var(--paper)}
+html[data-design=v6] .v6-btn.primary{background:var(--v6-accent);color:#1B1317;border-color:var(--v6-line)}
+html[data-design=v6] .v6-hero-art{position:relative;display:grid;place-items:center;min-height:250px}
+html[data-design=v6] .v6-jf{
+  width:clamp(160px,17vw,230px);height:auto;
+  filter:drop-shadow(0 18px 24px color-mix(in srgb,var(--v6-accent) 30%,transparent));
+}
+html[data-design=v6] .v6-bubble{
+  position:absolute;right:0;top:4%;background:var(--ink-2);border:2px solid var(--v6-line);
+  border-radius:18px;border-bottom-left-radius:5px;padding:8px 12px;font-size:12px;
+  font-weight:700;box-shadow:var(--v6-shadow-sm);transform:rotate(2deg);
+}
+html[data-design=v6] .v6-hero-art::before,
+html[data-design=v6] .v6-hero-art::after{
+  content:"";position:absolute;border-radius:50%;pointer-events:none;
+  background:color-mix(in srgb,var(--v6-accent) 18%,transparent);filter:blur(1px);
+}
+html[data-design=v6] .v6-hero-art::before{width:90px;height:90px;left:4%;top:10%}
+html[data-design=v6] .v6-hero-art::after{width:54px;height:54px;right:10%;bottom:8%;background:color-mix(in srgb,var(--v6-accent-2) 22%,transparent)}
+@media (prefers-reduced-motion:no-preference){
+  html[data-design=v6] .v6-jf{animation:v6-float 6s ease-in-out infinite}
+  @keyframes v6-float{0%,100%{transform:translateY(-4px)}50%{transform:translateY(6px)}}
+}
+
+/* ── 门户卡片：2px 墨线 + 贴纸硬投影 ─────────────────────────────── */
+html[data-design=v6] .kb-ph{font-family:var(--v6-display);font-size:clamp(22px,3vw,30px);letter-spacing:-.01em;margin-top:var(--s5)}
+html[data-design=v6] .kb-ph::after{content:"";display:block;width:84px;height:7px;margin-top:6px;border-radius:99px;background:var(--v6-accent-2)}
+html[data-design=v6] .kb-cats{grid-template-columns:repeat(4,1fr);gap:12px}
+html[data-design=v6] .kb-pcard{
+  position:relative;display:block;overflow:hidden;background:var(--ink-2);
+  border:2px solid var(--v6-line);border-radius:var(--v6-r);padding:13px 13px 11px;
+  box-shadow:var(--v6-shadow);transition:transform .15s,box-shadow .15s;
+}
+html[data-design=v6] .kb-pcard::after{
+  content:"";position:absolute;right:-20px;bottom:-26px;width:70px;height:70px;border-radius:50%;
+  background:color-mix(in srgb,var(--pc,var(--v6-accent)) 20%,transparent);pointer-events:none;
+}
+html[data-design=v6] .kb-pcard:hover{transform:translateY(-3px);box-shadow:0 8px 0 light-dark(rgba(36,27,23,.88),rgba(0,0,0,.62))}
+html[data-design=v6] .kb-pico{
+  display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+  background:var(--pc,var(--v6-accent));color:#1B1317;border:2px solid var(--v6-line);
+  font-weight:800;font-size:13px;margin-bottom:8px;line-height:1;
+}
+html[data-design=v6] .kb-pname{font-family:var(--v6-display);font-size:16px;display:flex;align-items:center;gap:8px}
+html[data-design=v6] .kb-pname i{display:none}
+html[data-design=v6] .kb-pdesc{display:block;margin-top:6px;font-size:12px;line-height:1.65;color:var(--paper-2)}
+html[data-design=v6] .kb-cat{
+  margin-top:var(--s6);background:var(--ink-2);border:2px solid var(--v6-line);
+  border-radius:var(--v6-r);padding:var(--s4);box-shadow:var(--v6-shadow);
+}
+html[data-design=v6] .kb-cat h2{font-family:var(--v6-display);font-size:22px}
+html[data-design=v6] .kb-list li{border-bottom:1px dashed var(--rule)}
+html[data-design=v6] .kb-t{font-weight:700}
+
+/* ── 条目页：A 的纸面阅读 + C 的播放时刻 ──────────────────────────── */
+html[data-design=v6] .doc-article h1{
+  font-family:var(--v6-display);font-size:clamp(38px,5vw,58px);line-height:1.02;
+  letter-spacing:-.02em;font-weight:400;
+}
+html[data-design=v6] .kb-lead{font-size:15px}
+html[data-design=v6] .kb-chip{
+  border:2px solid var(--v6-line);border-radius:999px;background:var(--ink-2);
+  padding:4px 10px;box-shadow:var(--v6-shadow-sm);font-size:12px;
+}
+html[data-design=v6] .kb-tablewrap{
+  border:2px solid var(--v6-line);border-radius:var(--v6-r);overflow:hidden;
+  background:var(--ink-2);box-shadow:var(--v6-shadow);
+}
+html[data-design=v6] .kb-tablewrap thead th{background:var(--ink-3);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+html[data-design=v6] .kb-tablewrap td{border-bottom:1px dashed var(--rule)}
+html[data-design=v6] .kb-tablewrap tbody tr:hover{background:var(--ink-3)}
+html[data-design=v6] .kb-item{
+  border:2px solid var(--v6-line);border-radius:14px;background:var(--ink-2);
+  box-shadow:var(--v6-shadow-sm);padding:10px 12px;
+}
+html[data-design=v6] .kb-play{
+  background:var(--v6-accent);color:#1B1317;border:2px solid var(--v6-line);
+  box-shadow:var(--v6-shadow-sm);
+}
+html[data-design=v6] .kb-play:hover{filter:brightness(1.04)}
+html[data-design=v6] .kb-why{
+  border-left:5px solid var(--v6-accent);background:var(--ink-3);
+  border-radius:0 12px 12px 0;padding:10px 12px;
+}
+html[data-design=v6] .kb-note{border-left-color:var(--v6-accent)}
+html[data-design=v6] .kb-title{font-weight:700}
+
+/* ── 播放条与底栏：夜里发光，白天是纸面 ─────────────────────────── */
+html[data-design=v6] .pbar{
+  border-top:2px solid var(--v6-line);background:var(--ink-2);
+  box-shadow:0 -14px 34px -26px color-mix(in srgb,var(--v6-accent) 55%,transparent);
+}
+html[data-design=v6] .kb-tabs{background:var(--ink-2);border-top:2px solid var(--v6-line)}
+/* 底栏当前项不能用 accent 当文字色：珊瑚/金色在奶油底上只有 ~2:1。
+   用纸色文字 + 3px accent 上沿线 —— 颜色只做加强，不承担可读性。 */
+html[data-design=v6] .kb-tabs > a[aria-current=page]{color:var(--paper);font-weight:700;box-shadow:inset 0 3px 0 var(--v6-accent)}
+html[data-design=v6] .kb-tabs-sheet{background:var(--ink-2);border:2px solid var(--v6-line);border-radius:16px}
+
+/* ── 手机 ─────────────────────────────────────────────────────────── */
+@media (max-width:900px){
+  html[data-design=v6] .kb-cats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  html[data-design=v6] .v6-hero{grid-template-columns:1fr;gap:10px}
+  html[data-design=v6] .v6-hero-art{min-height:180px;order:-1}
+  html[data-design=v6] .v6-jf{width:150px}
+  html[data-design=v6] .v6-bubble{right:6%;top:0}
+  html[data-design=v6] .doc-index h1{font-size:clamp(42px,13vw,58px)}
+  html[data-design=v6] .kb-cats{grid-template-columns:1fr}
+  html[data-design=v6] .kb-cat{padding:var(--s3)}
+  html[data-design=v6] .doc-article h1{font-size:clamp(36px,10vw,46px)}
+  html[data-design=v6] .kb-chip{font-size:11.5px}
+}

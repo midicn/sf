@@ -2,7 +2,7 @@
    策略：HTML 网络优先（改了立刻能看到），资产缓存优先（切站不再重复下载）。
    切站"像站内切换"靠的就是这条：目标页的 HTML 在指针按下时已经开始取。 */
 var VER = 'midicn-0.7.0';
-var PRECACHE = ["/", "/assets/core/icons/favicon.9e01bb7a2e.svg", "/assets/core/midicn.67b49e760b.css", "/assets/core/shell.83698018a9.js", "/assets/core/v6-data.32a62fe518.css", "/manifest.json"];
+var PRECACHE = ["/", "/assets/core/icons/favicon.9e01bb7a2e.svg", "/assets/core/midicn.138e8d7630.css", "/assets/core/shell.722b90befd.js", "/assets/core/theme.be44a36d5c.js", "/assets/core/v6-data.e07754c398.css", "/manifest.json"];
 self.addEventListener('install', function (e) {
   /* 逐个取、单个失败不牵连整体：运行期容错，构建判据另行核对产物。 */
   e.waitUntil(caches.open(VER).then(function (c) {

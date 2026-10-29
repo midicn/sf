@@ -16,24 +16,6 @@
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   };
 
-  /* ① 主题 —— 页面没绑过才接管。默认跟随系统：只有用户按过、留下存储值时才覆盖。 */
-  var themeBtn = document.getElementById('theme');
-  var darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-  function currentTheme() {
-    return document.documentElement.dataset.theme || (darkMQ && darkMQ.matches ? 'dark' : 'light');
-  }
-  function setTheme(v) {
-    document.documentElement.dataset.theme = v;
-    store.set('midicn-theme', v);
-  }
-  if (themeBtn && !themeBtn.onclick) {
-    var savedTheme = store.get('midicn-theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') setTheme(savedTheme);
-    themeBtn.onclick = function () {
-      setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
-    };
-  }
-
   /* ② 语言 —— 同上；按 data-zh / data-en 互换 */
   var langBtn = document.getElementById('lang');
   if (langBtn && !langBtn.onclick) {
