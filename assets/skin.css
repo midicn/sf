@@ -83,3 +83,22 @@ html[data-design=v6] .fnav a:hover,.html[data-design=v6] .fnav a.on{color:var(--
 html[data-design=v6] .flic{margin-left:auto;color:var(--paper-3);font-size:11.5px}
 html[data-design=v6] .fnote{padding:4px 0 18px;color:var(--paper-3);font-size:11.5px;line-height:1.8}
 html[data-design=v6] .fnote a{color:var(--paper-2)}
+
+/* 数据站底栏与知识站同色 */
+@media (max-width:640px){
+  html[data-design=v6] .kb-tabs{
+    display:grid; grid-template-columns:repeat(8,1fr); gap:1px;
+    position:fixed; left:0; right:0; bottom:0; z-index:60;
+    padding:6px 4px calc(6px + var(--sa-b));
+    background:color-mix(in srgb,var(--ink-2) 92%,transparent);
+    backdrop-filter:blur(12px); border-top:1px solid var(--rule)
+  }
+  html[data-design=v6] .kb-tabs>a{
+    display:grid; place-items:center; gap:2px; font-size:9.5px; padding:4px 0;
+    color:var(--paper-3); border-radius:12px; text-decoration:none
+  }
+  html[data-design=v6] .kb-tabs>a svg{ width:18px; height:18px; fill:currentColor; color:var(--nc,#1F4BFF) }
+  html[data-design=v6] .kb-tabs>a[aria-current="page"]{
+    color:var(--accent); background:color-mix(in srgb,var(--accent) 14%,transparent)
+  }
+}
