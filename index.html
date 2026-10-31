@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>音色库（SoundFont）目录 · 许可分级 · 来源可核</title>
 <meta name="description" content="midicn 音色库目录：1,277 条 SoundFont 实测记录，逐条标注许可、来源、格式与体积。只托管可自由分发的（CC0 / 公有领域 / WTFPL），署名型另设专区，有传染性与不可分发的只给来源。下载后可载入音乐库播放器试听。">
-<script>(function(){try{var m=document.cookie.match(/(?:^|; )midicn-theme=(light|dark)/);var t=m?m[1]:localStorage.getItem('midicn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+<script>(function(){try{var C=document.cookie.match(/(?:^|; )midicn-theme=(light|dark)/g)||[];var m=C.length?C[C.length-1]:'';var t=m?m.split('=')[1]:localStorage.getItem('midicn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/core/midicn.afe1dd9b5e.css">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -103,7 +103,7 @@ const store = {
   get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
 };
-let LANG = (document.cookie.match(/(?:^|; )midicn-lang=(zh|en)/)||[])[1] || store.get('midicn-lang', null) || 'zh';
+let LC=document.cookie.match(/(?:^|; )midicn-lang=(zh|en)/g)||[]; let LANG = (LC.length?LC[LC.length-1].split('=')[1]:'') || store.get('midicn-lang', null) || 'zh';
 function t(zh, en){ return LANG === 'zh' ? zh : en; }
 const $ = id => document.getElementById(id);
 const fmt = n => (n||0).toLocaleString('en-US');
@@ -182,7 +182,7 @@ function applyLang(){
   const lb = $('lang'); if(lb) lb.textContent = LANG === 'zh' ? 'EN' : '中';
   if(D) render();
 }
-$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh'; store.set('midicn-lang', LANG); document.cookie = 'midicn-lang=' + LANG + '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax'; applyLang(); };
+$('lang').onclick = ()=>{ LANG = LANG === 'zh' ? 'en' : 'zh'; store.set('midicn-lang', LANG); document.cookie='midicn-lang=; path=/; max-age=0'; document.cookie = 'midicn-lang=' + LANG + '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax'; applyLang(); };
 
 
 function licBadge(e){
@@ -464,8 +464,8 @@ async function boot(){
 applyLang();
 boot();
 </script>
-<script src="assets/core/shell.413109c3ba.js"></script>
-<script defer src="assets/core/theme.ee2b141b00.js"></script>
+<script src="assets/core/shell.e04edf7096.js"></script>
+<script defer src="assets/core/theme.8087c75b5a.js"></script>
 <script src="assets/shell.js"></script>
 <nav class="kb-tabs" aria-label="midicn · 移动导航"><a href="https://home.midicn.com/" style="--nc:#FF8B6E" data-zh="首页" data-en="Home"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-home"/></svg><span>首页</span></a><a href="https://gloss.midicn.com/" style="--nc:#C778E8" data-zh="词典" data-en="Dictionary"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-gloss"/></svg><span>词典</span></a><a href="https://ai.midicn.com/" style="--nc:#FF6FA8" data-zh="AI" data-en="AI"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-ai"/></svg><span>AI</span></a><a href="https://prod.midicn.com/" style="--nc:#4CCDE0" data-zh="音频" data-en="Audio"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-prod"/></svg><span>音频</span></a><a href="https://hist.midicn.com/" style="--nc:#EBCB4E" data-zh="乐史" data-en="History"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-hist"/></svg><span>乐史</span></a><a href="https://inst.midicn.com/" style="--nc:#6BD98A" data-zh="乐器" data-en="Instruments"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-inst"/></svg><span>乐器</span></a><a href="https://theo.midicn.com/" style="--nc:#7E9BFF" data-zh="乐理" data-en="Theory"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-theo"/></svg><span>乐理</span></a><a href="https://lib.midicn.com/" style="--nc:#E07A3F" data-zh="MIDI" data-en="MIDI"><svg aria-hidden="true" viewBox="0 0 24 24"><use href="#kb-i-lib"/></svg><span>MIDI</span></a></nav>
 </body>

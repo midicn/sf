@@ -14,8 +14,9 @@
   var store = {
     get: function (k) {
       try {
-        var m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]+)'));
-        if (m) return decodeURIComponent(m[1]);
+        var ms = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]+)', 'g')) || [];
+        // 同名 cookie 可能同时存在 host-only 与 .midicn.com 两份：后者排在后面，优先
+        if (ms.length) return decodeURIComponent(ms[ms.length - 1].split('=')[1]);
       } catch (e) {}
       try { return localStorage.getItem(k); } catch (e) { return null; }
     },
@@ -23,6 +24,7 @@
       try { localStorage.setItem(k, v); } catch (e) {}
       // cookie 才能跨子域：知识站切换语言时也读这一份
       try {
+        document.cookie = k + '=; path=/; max-age=0';
         document.cookie = k + '=' + encodeURIComponent(v) +
           '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax';
       } catch (e) {}

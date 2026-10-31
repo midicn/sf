@@ -22,6 +22,8 @@
     try { localStorage.setItem('midicn-theme', next); } catch (e) {}
     // cookie 才能跨子域：midicn.com 各站切换时保持同一套明暗
     try {
+      // 先清掉旧版遗留的 host-only cookie，避免同名两份互相遮挡
+      document.cookie = 'midicn-theme=; path=/; max-age=0';
       document.cookie = 'midicn-theme=' + next +
         '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax';
     } catch (e) {}
