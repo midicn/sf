@@ -1,8 +1,8 @@
-/* midicn core v0.7.0 —— 一份 SW，装进每个站的根目录
+/* midicn core v0.9.0 —— 一份 SW，装进每个站的根目录
    策略：HTML 网络优先（改了立刻能看到），资产缓存优先（切站不再重复下载）。
    切站"像站内切换"靠的就是这条：目标页的 HTML 在指针按下时已经开始取。 */
-var VER = 'midicn-0.7.0';
-var PRECACHE = ["/", "/assets/core/icons/favicon.9e01bb7a2e.svg", "/assets/core/midicn.138e8d7630.css", "/assets/core/shell.722b90befd.js", "/assets/core/theme.be44a36d5c.js", "/assets/core/v6-data.e07754c398.css", "/manifest.json"];
+var VER = 'midicn-0.9.0';
+var PRECACHE = ["/", "/assets/core/midicn.afe1dd9b5e.css", "/assets/core/shell.413109c3ba.js", "/assets/core/theme.ee2b141b00.js", "/assets/core/v6-data.e07754c398.css", "/manifest.json"];
 self.addEventListener('install', function (e) {
   /* 逐个取、单个失败不牵连整体：运行期容错，构建判据另行核对产物。 */
   e.waitUntil(caches.open(VER).then(function (c) {

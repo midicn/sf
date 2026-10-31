@@ -12,8 +12,21 @@
   'use strict';
 
   var store = {
-    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    get: function (k) {
+      try {
+        var m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]+)'));
+        if (m) return decodeURIComponent(m[1]);
+      } catch (e) {}
+      try { return localStorage.getItem(k); } catch (e) { return null; }
+    },
+    set: function (k, v) {
+      try { localStorage.setItem(k, v); } catch (e) {}
+      // cookie 才能跨子域：知识站切换语言时也读这一份
+      try {
+        document.cookie = k + '=' + encodeURIComponent(v) +
+          '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax';
+      } catch (e) {}
+    }
   };
 
   /* ② 语言 —— 同上；按 data-zh / data-en 互换 */
@@ -26,7 +39,20 @@
       var nodes = document.querySelectorAll('[data-zh]');
       for (var i = 0; i < nodes.length; i++) {
         var v = nodes[i].getAttribute('data-' + LANG);
-        if (v != null) nodes[i].innerHTML = v;
+        if (v == null) continue;
+        // 只换文字节点或 <span> 标签，绝不把 <svg> 一起 innerHTML 掉
+        var done = false;
+        for (var c = 0; c < nodes[i].childNodes.length; c++) {
+          var n = nodes[i].childNodes[c];
+          if (n.nodeType === 3 && n.textContent.replace(/\s/g, '')) {
+            n.textContent = v; done = true; break;
+          }
+        }
+        if (!done) {
+          var span = nodes[i].querySelector('span');
+          if (span) span.textContent = v;
+          else nodes[i].innerHTML = v;
+        }
       }
       var phs = document.querySelectorAll('[data-ph-zh]');
       for (var j = 0; j < phs.length; j++) {

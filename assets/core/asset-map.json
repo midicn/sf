@@ -1,14 +1,14 @@
 {
-  "core_version": "0.7.0",
+  "core_version": "0.9.0",
   "assets": {
     "assets/core/icons/favicon.svg": "/assets/core/icons/favicon.9e01bb7a2e.svg",
     "assets/core/icons/icon-192.png": "/assets/core/icons/icon-192.38fcdb520a.png",
     "assets/core/icons/icon-512.png": "/assets/core/icons/icon-512.5be5e2f189.png",
     "assets/core/icons/icon-maskable-512.png": "/assets/core/icons/icon-maskable-512.7193f36edd.png",
-    "assets/core/midicn.css": "/assets/core/midicn.138e8d7630.css",
+    "assets/core/midicn.css": "/assets/core/midicn.afe1dd9b5e.css",
     "assets/core/player/player.js": "/assets/core/player/player.19707132f3.js",
-    "assets/core/shell.js": "/assets/core/shell.722b90befd.js",
-    "assets/core/theme.js": "/assets/core/theme.be44a36d5c.js",
+    "assets/core/shell.js": "/assets/core/shell.413109c3ba.js",
+    "assets/core/theme.js": "/assets/core/theme.ee2b141b00.js",
     "assets/core/v6-data.css": "/assets/core/v6-data.e07754c398.css"
   }
 }

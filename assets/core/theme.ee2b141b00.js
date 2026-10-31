@@ -20,6 +20,11 @@
     var next = current() === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem('midicn-theme', next); } catch (e) {}
+    // cookie 才能跨子域：midicn.com 各站切换时保持同一套明暗
+    try {
+      document.cookie = 'midicn-theme=' + next +
+        '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax';
+    } catch (e) {}
     label();
   });
   if (mq && mq.addEventListener) mq.addEventListener('change', label);

@@ -1,20 +1,20 @@
 {
-  "core_version": "0.7.0",
+  "core_version": "0.9.0",
   "site": "sf",
   "host": "sf.midicn.com",
   "layers": [
     "core"
   ],
-  "installed_at": "2026-10-28T08:00:07+08:00",
+  "installed_at": "2026-10-31T07:16:07+08:00",
   "files": {
     "assets/core/icons/favicon.9e01bb7a2e.svg": "9e01bb7a2e2bfad6a824f289ee63438835162c36aede69c6ef2e612f1251d4b2",
     "assets/core/icons/icon-192.38fcdb520a.png": "38fcdb520a8bb35847a1134f1b6258f9056c17b35176c502361c23bd8312d698",
     "assets/core/icons/icon-512.5be5e2f189.png": "5be5e2f189562adc9803cdeb714788e8464037e9ea7fccd67389088547eafa47",
     "assets/core/icons/icon-maskable-512.7193f36edd.png": "7193f36edd66ecd59567fb644dbb1a7baadcf9c184b779e0fa9245a46039dc25",
-    "assets/core/midicn.138e8d7630.css": "138e8d763045f10c3dac8ca447f089e059036b1626e9e41ebf387c3c5e712f31",
+    "assets/core/midicn.afe1dd9b5e.css": "afe1dd9b5e49b82bd2c98d811020c0822525583b5b51cdb03a6758dda1f752bb",
     "assets/core/player/player.19707132f3.js": "19707132f35ee0118d5dc09fce4aadadc8d6eb18608b22bfc04a28cf64446796",
-    "assets/core/shell.722b90befd.js": "722b90befd88c2ff9079ce216dae255eda63d35c73814c3121c9a76747ed4d46",
-    "assets/core/theme.be44a36d5c.js": "be44a36d5cc475903fe0258d6cd7b41586293a275ab2343b259173fc3101d499",
+    "assets/core/shell.413109c3ba.js": "413109c3bae7aa7548a022b34e7576194b1c0caa29227416bbf48625819906b9",
+    "assets/core/theme.ee2b141b00.js": "ee2b141b00b9c7b77f70a68daf788ddcadaafa33f08c20237fb71c7e9d91af55",
     "assets/core/v6-data.e07754c398.css": "e07754c398af463f8a2bc26051cba84975d7d02f3f158f0292d15a11915c4fe4"
   }
 }
