@@ -54,6 +54,10 @@ html[data-design=v6] .stitle h2{
   letter-spacing:-.01em;font-weight:400;
 }
 html[data-design=v6] .stitle .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em}
+@media (max-width:640px){
+  html[data-design=v6] .stitle{ row-gap:4px }
+  html[data-design=v6] .stitle .meta{ white-space:normal; max-width:100%; flex:1 0 100% }
+}
 html[data-design=v6] h1{font-family:var(--v6-display);font-weight:400;letter-spacing:-.02em}
 html[data-design=v6] .hero .lede{font-size:15px}
 html[data-design=v6] .tag,
