@@ -5,15 +5,15 @@
   "layers": [
     "core"
   ],
-  "installed_at": "2026-10-31T10:08:06+08:00",
+  "installed_at": "2026-11-01T09:04:43+08:00",
   "files": {
     "assets/core/icons/favicon.9e01bb7a2e.svg": "9e01bb7a2e2bfad6a824f289ee63438835162c36aede69c6ef2e612f1251d4b2",
     "assets/core/icons/icon-192.38fcdb520a.png": "38fcdb520a8bb35847a1134f1b6258f9056c17b35176c502361c23bd8312d698",
     "assets/core/icons/icon-512.5be5e2f189.png": "5be5e2f189562adc9803cdeb714788e8464037e9ea7fccd67389088547eafa47",
     "assets/core/icons/icon-maskable-512.7193f36edd.png": "7193f36edd66ecd59567fb644dbb1a7baadcf9c184b779e0fa9245a46039dc25",
-    "assets/core/midicn.afe1dd9b5e.css": "afe1dd9b5e49b82bd2c98d811020c0822525583b5b51cdb03a6758dda1f752bb",
+    "assets/core/midicn.748e2e1b77.css": "748e2e1b77387d7fb1da08913a970b5ed63298d7a1432f69d0ce409895077eba",
     "assets/core/player/player.19707132f3.js": "19707132f35ee0118d5dc09fce4aadadc8d6eb18608b22bfc04a28cf64446796",
-    "assets/core/shell.e04edf7096.js": "e04edf7096dfb562eb3829720d03ad6d187b3d7cad39628478db33d6ab5bcf06",
+    "assets/core/shell.dbc1c8e294.js": "dbc1c8e29413cd0b4188bf09fb646ac0bba50e8ba3ade170ba71ace19b45929f",
     "assets/core/theme.8087c75b5a.js": "8087c75b5ac31ceb765bb9b9351a414cc66d8d5f0f650d9564ee48e3e04faec6",
     "assets/core/v6-data.b4d0081a6b.css": "b4d0081a6b354cc8f88a69bb10c958c28b28868da08475abb3cb09264da809e8"
   }

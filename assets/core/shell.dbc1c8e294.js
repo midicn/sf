@@ -33,7 +33,29 @@
 
   /* ② 语言 —— 同上；按 data-zh / data-en 互换 */
   var langBtn = document.getElementById('lang');
-  if (langBtn && !langBtn.onclick) {
+
+  /* 外壳控件的无障碍名称（aria-label / title）带 data-zh-label / data-en-label。
+     这一段**与按钮由谁绑定无关**，所以放在外面无条件跑：lib 那几页自带 applyLang，
+     若只在下面的兜底分支里换名称，那些页切换语言后可见文字变了、读屏器与鼠标
+     提示还留在另一种语言。 */
+  function swapLabels(lang) {
+    var labs = document.querySelectorAll('[data-zh-label]');
+    for (var i = 0; i < labs.length; i++) {
+      var v = labs[i].getAttribute('data-' + lang + '-label');
+      if (v != null) { labs[i].setAttribute('aria-label', v); labs[i].setAttribute('title', v); }
+    }
+  }
+  swapLabels(store.get('midicn-lang') || 'zh');
+
+  if (langBtn && langBtn.onclick) {
+    // 页面自己绑了切换：它的换词跑完之后再补一次名称，语言读它落盘的那一份
+    var inner = langBtn.onclick;
+    langBtn.onclick = function () {
+      var r = inner.apply(this, arguments);
+      swapLabels(store.get('midicn-lang') || 'zh');
+      return r;
+    };
+  } else if (langBtn) {
     var LANG = store.get('midicn-lang') || 'zh';
 
     function applyLang() {
@@ -61,7 +83,9 @@
         var p = phs[j].getAttribute('data-ph-' + LANG);
         if (p != null) phs[j].placeholder = p;
       }
-      langBtn.textContent = LANG === 'zh' ? 'EN' : '中';
+      swapLabels(LANG);
+      // 语言胶囊上的字与知识站同一份：中文页写「EN」、英文页写「中文」
+      langBtn.textContent = LANG === 'zh' ? 'EN' : '中文';
     }
 
     applyLang();
