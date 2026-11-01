@@ -1,0 +1,45 @@
+MIT License
+
+Copyright (c) 2026 midicn contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Scope / 适用范围
+
+**MIT applies to code only** — the site's styles, client scripts and page
+templates under `assets/`:
+
+- midicn/theo : site pages (HTML), styles (CSS), client scripts (JavaScript)
+
+**The text content of every page** (headings, summaries, article bodies,
+diagram captions — both Chinese and English) is **original writing** licensed
+under **CC BY 4.0** — attribution only:
+
+    midicn 乐理与和声 © 2026 midicn contributors, licensed CC BY 4.0
+    https://creativecommons.org/licenses/by/4.0/
+
+The content source lives in [`midicn/music-theory`](https://github.com/midicn/music-theory);
+see its `LICENSE` for the full content-licence text.
+
+**Musical material is NOT relicensed here.** Every track referenced by a page
+keeps the licence of its upstream source (see the per-track `l` field in the
+[dataset](https://lib.midicn.com/)). This project claims no rights over that
+material and cannot grant rights to it.

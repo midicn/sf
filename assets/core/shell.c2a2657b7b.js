@@ -1,0 +1,108 @@
+/* midicn-lib 三站共享外壳脚本（lib / mid / zip）
+ *
+ * 职责：**只做各页自己没做的事**，保证三站交互一致。
+ *   · 主题切换（#theme）
+ *   · 语言切换（#lang）：按 data-zh / data-en 属性互换文案
+ *
+ * 关键约定：本脚本必须放在**页面自身脚本之后**（`</body>` 前一行）。
+ * 因为页面若已自行绑定（如 lib 站的各页都有自己的 applyLang / setTheme），
+ * 这里会检测 `btn.onclick` 已存在而**跳过**，避免重复绑定导致「点一下切两次＝没反应」。
+ */
+(function () {
+  'use strict';
+
+  var store = {
+    get: function (k) {
+      try {
+        var ms = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]+)', 'g')) || [];
+        // 同名 cookie 可能同时存在 host-only 与 .midicn.com 两份：后者排在后面，优先
+        if (ms.length) return decodeURIComponent(ms[ms.length - 1].split('=')[1]);
+      } catch (e) {}
+      try { return localStorage.getItem(k); } catch (e) { return null; }
+    },
+    set: function (k, v) {
+      try { localStorage.setItem(k, v); } catch (e) {}
+      // cookie 才能跨子域：知识站切换语言时也读这一份
+      try {
+        document.cookie = k + '=; path=/; max-age=0';
+        document.cookie = k + '=' + encodeURIComponent(v) +
+          '; path=/; domain=.midicn.com; max-age=31536000; SameSite=Lax';
+      } catch (e) {}
+    }
+  };
+
+  /* ② 语言 —— 同上；按 data-zh / data-en 互换 */
+  var langBtn = document.getElementById('lang');
+
+  /* 外壳控件的无障碍名称（aria-label / title）带 data-zh-label / data-en-label。
+     这一段**与按钮由谁绑定无关**，所以放在外面无条件跑：lib 那几页自带 applyLang，
+     若只在下面的兜底分支里换名称，那些页切换语言后可见文字变了、读屏器与鼠标
+     提示还留在另一种语言。 */
+  function swapLabels(lang) {
+    var links = document.querySelectorAll('[data-zh-href]');
+    for (var h = 0; h < links.length; h++) {
+      var href = links[h].getAttribute('data-' + lang + '-href');
+      if (href) links[h].setAttribute('href', href);
+    }
+    var labs = document.querySelectorAll('[data-zh-label]');
+    for (var i = 0; i < labs.length; i++) {
+      var v = labs[i].getAttribute('data-' + lang + '-label');
+      if (v != null) { labs[i].setAttribute('aria-label', v); labs[i].setAttribute('title', v); }
+    }
+  }
+  swapLabels(store.get('midicn-lang') || 'zh');
+
+  if (langBtn && langBtn.onclick) {
+    // 页面自己绑了切换：它的换词跑完之后再补一次名称，语言读它落盘的那一份
+    var inner = langBtn.onclick;
+    langBtn.onclick = function () {
+      var r = inner.apply(this, arguments);
+      swapLabels(store.get('midicn-lang') || 'zh');
+      return r;
+    };
+  } else if (langBtn) {
+    var LANG = store.get('midicn-lang') || 'zh';
+
+    function applyLang() {
+      document.documentElement.lang = LANG === 'zh' ? 'zh' : 'en';
+      var nodes = document.querySelectorAll('[data-zh]');
+      for (var i = 0; i < nodes.length; i++) {
+        var v = nodes[i].getAttribute('data-' + LANG);
+        if (v == null) continue;
+        // 只换文字节点或 <span> 标签，绝不把 <svg> 一起 innerHTML 掉
+        var done = false;
+        for (var c = 0; c < nodes[i].childNodes.length; c++) {
+          var n = nodes[i].childNodes[c];
+          if (n.nodeType === 3 && n.textContent.replace(/\s/g, '')) {
+            n.textContent = v; done = true; break;
+          }
+        }
+        if (!done) {
+          var span = nodes[i].querySelector('span');
+          if (span) span.textContent = v;
+          else nodes[i].innerHTML = v;
+        }
+      }
+      var phs = document.querySelectorAll('[data-ph-zh]');
+      for (var j = 0; j < phs.length; j++) {
+        var p = phs[j].getAttribute('data-ph-' + LANG);
+        if (p != null) phs[j].placeholder = p;
+      }
+      swapLabels(LANG);
+      // 语言胶囊上的字与知识站同一份：中文页写「EN」、英文页写「中文」
+      langBtn.textContent = LANG === 'zh' ? 'EN' : '中文';
+    }
+
+    applyLang();
+    langBtn.onclick = function () {
+      LANG = LANG === 'zh' ? 'en' : 'zh';
+      store.set('midicn-lang', LANG);
+      applyLang();
+      // 通知页面重渲染（若页面订阅了该事件）
+      try { document.dispatchEvent(new CustomEvent('midicn:lang', { detail: LANG })); } catch (e) {}
+    };
+
+    // 暴露给页面复用
+    window.midicnShell = { get lang() { return LANG; }, applyLang: applyLang };
+  }
+})();

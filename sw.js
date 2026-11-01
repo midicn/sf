@@ -1,46 +1,62 @@
-/* midicn core v0.9.0 —— 一份 SW，装进每个站的根目录
-   策略：HTML 网络优先（改了立刻能看到），资产缓存优先（切站不再重复下载）。
-   切站"像站内切换"靠的就是这条：目标页的 HTML 在指针按下时已经开始取。 */
-var VER = 'midicn-0.9.0';
-var PRECACHE = ["/", "/assets/core/icons/icon-192.38fcdb520a.png", "/assets/core/midicn.748e2e1b77.css", "/assets/core/shell.dbc1c8e294.js", "/assets/core/theme.8087c75b5a.js", "/assets/core/v6-data.b4d0081a6b.css", "/manifest.json"];
-self.addEventListener('install', function (e) {
-  /* 逐个取、单个失败不牵连整体：运行期容错，构建判据另行核对产物。 */
-  e.waitUntil(caches.open(VER).then(function (c) {
-    return Promise.all(PRECACHE.map(function (u) {
-      return fetch(u).then(function (r) {
-        if (r && r.ok) c.put(u, r.clone());
-      }).catch(function () { /* 缺一个文件不该让整个 SW 装不上 */ });
-    }));
-  }).then(function () { return self.skipWaiting(); }));
-});
-self.addEventListener('activate', function (e) {
-  e.waitUntil(caches.keys().then(function (ks) {
-    return Promise.all(ks.filter(function (k) { return k !== VER; })
-                        .map(function (k) { return caches.delete(k); }));
-  }).then(function () { return self.clients.claim(); }));
-});
-self.addEventListener('fetch', function (e) {
-  var req = e.request;
-  if (req.method !== 'GET') return;
-  var url = new URL(req.url);
-  if (url.origin !== location.origin) return;         /* 跨源（含其它子域）不接管 */
-  if (req.mode === 'navigate') {
-    /* stale-while-revalidate：先给缓存的那一版，同时后台取新的 */
-    e.respondWith(caches.match(req).then(function (hit) {
-      var net = fetch(req).then(function (res) {
-        if (res.ok) caches.open(VER).then(function (c) { c.put(req, res.clone()); });
-        return res;
-      });
-      return hit || net;
-    }));
-    return;
+var VER = 'midicn-1.0.0-0eb7d72609cf';
+var PRECACHE = ["/", "/404.html", "/assets/ui/base.becef00409d6.css", "/assets/ui/runtime.e7ce01e99bef.js"];
+/* midicn shared offline worker. Generated constants are prepended by install_core. */
+var PAGE_CACHE = VER + '-pages';
+var PAGE_LIMIT = 80;
+
+async function remember(cacheName, request, response) {
+  if (!response || !response.ok || response.type === 'opaque') return;
+  var cache = await caches.open(cacheName);
+  await cache.put(request, response.clone());
+  if (cacheName === PAGE_CACHE) {
+    var keys = await cache.keys();
+    await Promise.all(keys.slice(0, Math.max(0, keys.length - PAGE_LIMIT))
+      .map(function (key) { return cache.delete(key); }));
   }
-  if (url.pathname.indexOf('/assets/') === 0) {
-    e.respondWith(caches.match(req).then(function (hit) {
-      return hit || fetch(req).then(function (res) {
-        if (res.ok) caches.open(VER).then(function (c) { c.put(req, res.clone()); });
-        return res;
-      });
-    }));
+}
+
+self.addEventListener('install', function (event) {
+  event.waitUntil(Promise.all(PRECACHE.map(async function (url) {
+    try { await remember(VER, url, await fetch(url, {cache: 'reload'})); }
+    catch (_) { /* A transient failure must not prevent offline installation. */ }
+  })).then(function () { return undefined; }));
+});
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil((async function () {
+    var keys = await caches.keys();
+    // Keep unrelated application caches on the same origin.
+    await Promise.all(keys.filter(function (key) {
+      return /^midicn-\d+(?:\.\d+){2}(?:-[0-9a-f]+)?(?:-pages)?$/.test(key) &&
+        key !== VER && key !== PAGE_CACHE;
+    }).map(function (key) { return caches.delete(key); }));
+    if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch', function (event) {
+  var request = event.request;
+  var url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (request.mode === 'navigate') {
+    // Network first: a successful publish is visible on the very next navigation.
+    event.respondWith((async function () {
+      try {
+        var response = await event.preloadResponse || await fetch(request);
+        event.waitUntil(remember(PAGE_CACHE, request, response).catch(function () {}));
+        return response;
+      } catch (_) {
+        return await caches.match(request) || await caches.match('/') || Response.error();
+      }
+    })());
+  } else if (url.pathname.startsWith('/assets/')) {
+    event.respondWith((async function () {
+      var cached = await caches.match(request);
+      if (cached) return cached;
+      var response = await fetch(request);
+      event.waitUntil(remember(VER, request, response).catch(function () {}));
+      return response;
+    })());
   }
 });
