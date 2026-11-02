@@ -1,5 +1,5 @@
-var VER = 'midicn-1.3.0-ce4a2c7829bf';
-var PRECACHE = ["/", "/404.html", "/assets/ui/base.1fc49057f680.css", "/assets/ui/runtime.81408745fe46.js"];
+var VER = 'midicn-1.4.0-1b1c431da0da';
+var PRECACHE = ["/", "/404.html", "/assets/ui/base.498b1943d78c.css", "/assets/ui/runtime.81408745fe46.js"];
 /* midicn shared offline worker. Generated constants are prepended by install_core. */
 var PAGE_CACHE = VER + '-pages';
 var PAGE_LIMIT = 80;
