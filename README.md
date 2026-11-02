@@ -1,6 +1,6 @@
 # midicn · sf
 
-Frozen public site source, batch `midicn-1.1.0-20261102`, private core `1.1.0`.
+Frozen public site source, batch `midicn-1.2.0-20261102`, private core `1.2.0`.
 
 HTML and UI are built locally from the private core. This repository contains
 runtime files plus a small standard-library byte assembler. CI validates every
