@@ -1,4 +1,4 @@
-# MIDI音乐 · 音色库
+# midicn · 音色库
 
 > 听音乐，学音乐，做音乐。
 
@@ -9,8 +9,8 @@ This curated discovery index grants no model-training or third-party material ri
 
 ## 网站与使用说明
 
-- [MIDI音乐：站点与使用说明](https://home.midicn.com/about/): 品牌、分站、来源与反馈。
+- [midicn：站点与使用说明](https://midicn.com/about/): 品牌、分站、来源与反馈。
 
 ## English
 
-- [MIDI Music](https://home.midicn.com/en/): Listen, learn and make music.
+- [midicn](https://midicn.com/en/): Listen, learn and make music.
