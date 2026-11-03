@@ -1,0 +1,16 @@
+# MIDI音乐 · 音色库
+
+> 听音乐，学音乐，做音乐。
+
+查阅 SoundFont 的格式、来源、许可与下载方式。
+
+这是网站内容入口索引。收录与引用不改变原文、曲目、音色或歌词的许可；本文件不授予模型训练权。
+This curated discovery index grants no model-training or third-party material rights.
+
+## 网站与使用说明
+
+- [MIDI音乐：站点与使用说明](https://home.midicn.com/about/): 品牌、分站、来源与反馈。
+
+## English
+
+- [MIDI Music](https://home.midicn.com/en/): Listen, learn and make music.

@@ -1,3 +1,25 @@
 User-agent: *
 Allow: /
+
+# Search access does not grant training or third-party material rights.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+Allow: /llms.txt
+
+User-agent: Claude-SearchBot
+Disallow: /
+Allow: /llms.txt
+
 Sitemap: https://sf.midicn.com/sitemap.xml
